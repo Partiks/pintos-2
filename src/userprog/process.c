@@ -17,6 +17,7 @@
 #include "threads/palloc.h"
 #include "threads/thread.h"
 #include "threads/vaddr.h"
+//#include "lib/string.c"
 
 static thread_func start_process NO_RETURN;
 static bool load (const char *cmdline, void (**eip) (void), void **esp);
@@ -28,15 +29,59 @@ static bool load (const char *cmdline, void (**eip) (void), void **esp);
 tid_t
 process_execute (const char *file_name) 
 {
-  char *fn_copy;
+  char *fn_copy,*temp;
   tid_t tid;
-
   /* Make a copy of FILE_NAME.
      Otherwise there's a race between the caller and load(). */
   fn_copy = palloc_get_page (0);
-  if (fn_copy == NULL)
+  if (fn_copy == NULL){
     return TID_ERROR;
+  }
   strlcpy (fn_copy, file_name, PGSIZE);
+  //partiks code here
+  temp = palloc_get_page(0);
+  if (temp == NULL){
+    printf("<3>\n");
+    return TID_ERROR;
+  }
+  strlcpy (temp, file_name, PGSIZE);
+  char *token, *save_ptr;
+  char *argv[20];
+  int i=0;
+
+  file_name = strtok_r (file_name, " ", &save_ptr);
+  printf("<1>\n");
+  for(token = strtok_r (NULL, " ", &save_ptr); token != NULL; token = strtok_r (NULL, " ", &save_ptr))
+  {
+     printf ("LOL '%s'\n", token);
+     printf("%d value of i \n",i);
+    //args[i-1][0] = token;
+     printf("I = %d %s\n",i,token);
+     argv[i]=palloc_get_page(0);
+     strlcpy(argv[i], token,PGSIZE);
+     printf("%s added to argv\n\n",token);
+     i++;
+  }
+
+  printf("%s \n", file_name);
+  printf("%s \n",argv[0]);
+
+  /*
+   for (token = strtok_r (temp, " ", &save_ptr); token != NULL; token = strtok_r (NULL, " ", &save_ptr)){
+      printf ("LOL '%s'\n", token);
+      if (i!=0){
+        //args[i-1][0] = token;
+        strlcpy(args[i-1][0], token, PGSIZE);
+        i++;
+      }
+    }
+
+  printf("%s \n", args[0]);
+  printf("%s \n", args[1]);
+  printf("%s \n", args[2]);
+  printf("%s \n", args[3]);
+  printf("%s \n", args[4]);
+  //end partiks code */
 
   /* Create a new thread to execute FILE_NAME. */
   tid = thread_create (file_name, PRI_DEFAULT, start_process, fn_copy);
