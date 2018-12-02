@@ -49,14 +49,9 @@ process_execute (const char *file_name)
   char *argv[20];
   int i=0;
 
-  file_name = strtok_r (file_name, " ", &save_ptr);
-  printf("<1>\n");
-  for(token = strtok_r (NULL, " ", &save_ptr); token != NULL; token = strtok_r (NULL, " ", &save_ptr))
+  for(token = strtok_r (file_name, " ", &save_ptr); token != NULL; token = strtok_r (NULL, " ", &save_ptr))
   {
      printf ("LOL '%s'\n", token);
-     printf("%d value of i \n",i);
-    //args[i-1][0] = token;
-     printf("I = %d %s\n",i,token);
      argv[i]=palloc_get_page(0);
      strlcpy(argv[i], token,PGSIZE);
      printf("%s added to argv\n\n",token);
@@ -65,22 +60,8 @@ process_execute (const char *file_name)
 
   printf("%s \n", file_name);
   printf("%s \n",argv[0]);
+  printf("%s \n",argv[1]);
 
-  /*
-   for (token = strtok_r (temp, " ", &save_ptr); token != NULL; token = strtok_r (NULL, " ", &save_ptr)){
-      printf ("LOL '%s'\n", token);
-      if (i!=0){
-        //args[i-1][0] = token;
-        strlcpy(args[i-1][0], token, PGSIZE);
-        i++;
-      }
-    }
-
-  printf("%s \n", args[0]);
-  printf("%s \n", args[1]);
-  printf("%s \n", args[2]);
-  printf("%s \n", args[3]);
-  printf("%s \n", args[4]);
   //end partiks code */
 
   /* Create a new thread to execute FILE_NAME. */
@@ -104,6 +85,7 @@ start_process (void *file_name_)
   if_.gs = if_.fs = if_.es = if_.ds = if_.ss = SEL_UDSEG;
   if_.cs = SEL_UCSEG;
   if_.eflags = FLAG_IF | FLAG_MBS;
+  printf("<44> %s\n",file_name_);
   success = load (file_name, &if_.eip, &if_.esp);
 
   /* If load failed, quit. */
