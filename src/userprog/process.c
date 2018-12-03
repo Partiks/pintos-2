@@ -17,19 +17,18 @@
 #include "threads/palloc.h"
 #include "threads/thread.h"
 #include "threads/vaddr.h"
-//#include "lib/string.c"
+
 
 static thread_func start_process NO_RETURN;
-static bool load (const char *cmdline, void (**eip) (void), void **esp);
+static bool load (const char *cmdline, void (**eip) (void), void **esp, char *full_name);
 
 /* Starts a new thread running a user program loaded from
    FILENAME.  The new thread may be scheduled (and may even exit)
    before process_execute() returns.  Returns the new process's
    thread id, or TID_ERROR if the thread cannot be created. */
-tid_t
-process_execute (const char *file_name) 
+tid_t process_execute (const char *file_name) 
 {
-  char *fn_copy,*temp;
+  char *fn_copy;
   tid_t tid;
   /* Make a copy of FILE_NAME.
      Otherwise there's a race between the caller and load(). */
@@ -38,30 +37,9 @@ process_execute (const char *file_name)
     return TID_ERROR;
   }
   strlcpy (fn_copy, file_name, PGSIZE);
+  
   //partiks code here
-  temp = palloc_get_page(0);
-  if (temp == NULL){
-    printf("<3>\n");
-    return TID_ERROR;
-  }
-  strlcpy (temp, file_name, PGSIZE);
-  char *token, *save_ptr;
-  char *argv[20];
-  int i=0;
-
-  for(token = strtok_r (file_name, " ", &save_ptr); token != NULL; token = strtok_r (NULL, " ", &save_ptr))
-  {
-     printf ("LOL '%s'\n", token);
-     argv[i]=palloc_get_page(0);
-     strlcpy(argv[i], token,PGSIZE);
-     printf("%s added to argv\n\n",token);
-     i++;
-  }
-
-  printf("%s \n", file_name);
-  printf("%s \n",argv[0]);
-  printf("%s \n",argv[1]);
-
+  
   //end partiks code */
 
   /* Create a new thread to execute FILE_NAME. */
@@ -73,8 +51,7 @@ process_execute (const char *file_name)
 
 /* A thread function that loads a user process and starts it
    running. */
-static void
-start_process (void *file_name_)
+static void start_process (void *file_name_)
 {
   char *file_name = file_name_;
   struct intr_frame if_;
@@ -85,13 +62,39 @@ start_process (void *file_name_)
   if_.gs = if_.fs = if_.es = if_.ds = if_.ss = SEL_UDSEG;
   if_.cs = SEL_UCSEG;
   if_.eflags = FLAG_IF | FLAG_MBS;
-  printf("<44> %s\n",file_name_);
-  success = load (file_name, &if_.eip, &if_.esp);
+  printf("<44> %s %s\n",file_name_,file_name);
+
+  //partiks code start
+
+  char *token,*save_ptr;
+  char *argv[20];
+  int i=0;
+
+  char *fn_copy_2;
+  /* Make a copy of FILE_NAME.
+     Otherwise there's a race between the caller and load(). */
+  fn_copy_2 = palloc_get_page (0);
+  if (fn_copy_2 == NULL){
+    return TID_ERROR;
+  }
+  strlcpy (fn_copy_2, file_name_, PGSIZE);
+
+  for(token = strtok_r (file_name, " ", &save_ptr); token != NULL; token = strtok_r (NULL, " ", &save_ptr))
+  {
+     argv[i]=palloc_get_page(0);
+     strlcpy(argv[i], token,PGSIZE);
+     i++;
+  }
+  //partiks code end
+  //printf("---- Calling load with %s %s %s %d %d \n\n ",file_name, &if_.eip, &if_.esp, &if_.eip, &if_.esp);
+  success = load (file_name, &if_.eip, &if_.esp,fn_copy_2); //passing file_name which is supposed to be just the executable name after messing with strtok_r()
 
   /* If load failed, quit. */
   palloc_free_page (file_name);
-  if (!success) 
+  if (!success){
+    printf("----- LOAD FAILED, IN THE END IT DOESN'T EVEN MATTER \n\n");
     thread_exit ();
+  }
 
   /* Start the user process by simulating a return from an
      interrupt, implemented by intr_exit (in
@@ -99,6 +102,8 @@ start_process (void *file_name_)
      arguments on the stack in the form of a `struct intr_frame',
      we just point the stack pointer (%esp) to our stack frame
      and jump to it. */
+  printf("MIRACLE !!!! \n");
+  
   asm volatile ("movl %0, %%esp; jmp intr_exit" : : "g" (&if_) : "memory");
   NOT_REACHED ();
 }
@@ -222,7 +227,7 @@ struct Elf32_Phdr
 #define PF_W 2          /* Writable. */
 #define PF_R 4          /* Readable. */
 
-static bool setup_stack (void **esp);
+static bool setup_stack (void **esp, char *full_name);
 static bool validate_segment (const struct Elf32_Phdr *, struct file *);
 static bool load_segment (struct file *file, off_t ofs, uint8_t *upage,
                           uint32_t read_bytes, uint32_t zero_bytes,
@@ -232,8 +237,7 @@ static bool load_segment (struct file *file, off_t ofs, uint8_t *upage,
    Stores the executable's entry point into *EIP
    and its initial stack pointer into *ESP.
    Returns true if successful, false otherwise. */
-bool
-load (const char *file_name, void (**eip) (void), void **esp) 
+bool load (const char *file_name, void (**eip) (void), void **esp, char *full_name) 
 {
   struct thread *t = thread_current ();
   struct Elf32_Ehdr ehdr;
@@ -242,6 +246,7 @@ load (const char *file_name, void (**eip) (void), void **esp)
   bool success = false;
   int i;
 
+  printf("\n<45>%s %s\n\n",file_name, full_name);
   /* Allocate and activate page directory. */
   t->pagedir = pagedir_create ();
   if (t->pagedir == NULL) 
@@ -329,9 +334,12 @@ load (const char *file_name, void (**eip) (void), void **esp)
     }
 
   /* Set up stack. */
-  if (!setup_stack (esp))
+  printf("----- REACHED nSETUP_STACK %s\n",full_name);
+  if (!setup_stack (esp, full_name)){
+    //printf("SETUP STACK FAILED\n\n");
     goto done;
-
+  }
+  //printf("SETUP STACK PASSED\n\n");
   /* Start address. */
   *eip = (void (*) (void)) ehdr.e_entry;
 
@@ -451,23 +459,58 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
   return true;
 }
 
+
 /* Create a minimal stack by mapping a zeroed page at the top of
    user virtual memory. */
-static bool
-setup_stack (void **esp) 
+static bool setup_stack (void **esp, char* full_name) 
 {
   uint8_t *kpage;
   bool success = false;
-
   kpage = palloc_get_page (PAL_USER | PAL_ZERO);
   if (kpage != NULL) 
     {
       success = install_page (((uint8_t *) PHYS_BASE) - PGSIZE, kpage, true);
       if (success)
-        *esp = PHYS_BASE-12;
+      {
+        *esp = PHYS_BASE;
+      }
       else
         palloc_free_page (kpage);
     }
+  // Partiks code start
+  printf("\nSETUP_STACK %d \n\n",*esp);
+  char *token,*save_ptr;
+  char *argv[50],char_append[10]="\0";
+  int i=0,count=0;
+  printf("ESP INITIAL: %d %x %x\n\n",*esp,*esp,*esp);
+
+  for(token = strtok_r (full_name, " ", &save_ptr); token != NULL; token = strtok_r (NULL, " ", &save_ptr))
+  {
+     argv[i]=palloc_get_page(0);
+     strlcat(token, char_append, sizeof(char_append));
+     strlcpy(argv[i], token, PGSIZE);
+     printf("LOL %s\n",argv[i]);
+     i++; count++;
+  }
+
+  printf("ESP INITIAL: %d\n\n",*esp);
+  printf("AFTER PARSE OPS IN SETUP_STACK\n");
+  hex_dump(PHYS_BASE-128,PHYS_BASE-128, 128,true);
+
+  for(i=0;i<count;i++){
+    *esp -=strlen(argv[i]) + 1;
+    printf("LOOP ESP INITIAL: %d %x %x\n\n",*esp,*esp,esp);
+    memcpy(*esp, argv[i], strlen(argv[i])+1);
+  }
+
+  printf("AFTER STACK OPS\n");
+  printf("ESP FINAL: %d %x %x\n\n",*esp,*esp,esp);
+  hex_dump(PHYS_BASE-128,PHYS_BASE-128, 128,true);
+
+
+  printf("------SUCCESS OF SETUP_STACK : %d\n\n",success);
+  //systemcall and stack setup sucessfull at VZW ANT 55B at 2111 on 2nd Dec
+  // Partiks code end */
   return success;
 }
 
