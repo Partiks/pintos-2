@@ -85,13 +85,13 @@ static void start_process (void *file_name_)
      i++;
   }
   //partiks code end
-  //printf("---- Calling load with %s %s %s %d %d \n\n ",file_name, &if_.eip, &if_.esp, &if_.eip, &if_.esp);
+  ////("---- Calling load with %s %s %s %d %d \n\n ",file_name, &if_.eip, &if_.esp, &if_.eip, &if_.esp);
   success = load (file_name, &if_.eip, &if_.esp,fn_copy_2); //passing file_name which is supposed to be just the executable name after messing with strtok_r()
 
   /* If load failed, quit. */
   palloc_free_page (file_name);
   if (!success){
-    printf("----- LOAD FAILED, IN THE END IT DOESN'T EVEN MATTER \n\n");
+    //("----- LOAD FAILED, IN THE END IT DOESN'T EVEN MATTER \n\n");
     thread_exit ();
   }
 
@@ -101,7 +101,7 @@ static void start_process (void *file_name_)
      arguments on the stack in the form of a `struct intr_frame',
      we just point the stack pointer (%esp) to our stack frame
      and jump to it. */
-  printf("MIRACLE !!!! \n");
+  //("MIRACLE !!!! \n");
   
   asm volatile ("movl %0, %%esp; jmp intr_exit" : : "g" (&if_) : "memory");
   NOT_REACHED ();
@@ -119,7 +119,7 @@ static void start_process (void *file_name_)
 int process_wait (tid_t child_tid UNUSED) 
 {
   int i=0;
-  for (i=0;i<4444444440402020202020202022;i++)
+  for (i=0;i<4444446;i++)
   {
     
   }
@@ -174,11 +174,11 @@ process_activate (void)
 typedef uint32_t Elf32_Word, Elf32_Addr, Elf32_Off;
 typedef uint16_t Elf32_Half;
 
-/* For use with ELF types in printf(). */
-#define PE32Wx PRIx32   /* Print Elf32_Word in hexadecimal. */
-#define PE32Ax PRIx32   /* Print Elf32_Addr in hexadecimal. */
-#define PE32Ox PRIx32   /* Print Elf32_Off in hexadecimal. */
-#define PE32Hx PRIx16   /* Print Elf32_Half in hexadecimal. */
+/* For use with ELF types in //(). */
+#define PE32Wx PRIx32   /* // Elf32_Word in hexadecimal. */
+#define PE32Ax PRIx32   /* // Elf32_Addr in hexadecimal. */
+#define PE32Ox PRIx32   /* // Elf32_Off in hexadecimal. */
+#define PE32Hx PRIx16   /* // Elf32_Half in hexadecimal. */
 
 /* Executable header.  See [ELF1] 1-4 to 1-8.
    This appears at the very beginning of an ELF binary. */
@@ -249,7 +249,7 @@ bool load (const char *file_name, void (**eip) (void), void **esp, char *full_na
   bool success = false;
   int i;
 
-  //printf("\n<45>%s %s\n\n",file_name, full_name);
+  ////("\n<45>%s %s\n\n",file_name, full_name);
   /* Allocate and activate page directory. */
   t->pagedir = pagedir_create ();
   if (t->pagedir == NULL) 
@@ -260,7 +260,7 @@ bool load (const char *file_name, void (**eip) (void), void **esp, char *full_na
   file = filesys_open (file_name);
   if (file == NULL) 
     {
-      printf ("load: %s: open failed\n", file_name);
+      // ("load: %s: open failed\n", file_name);
       goto done; 
     }
 
@@ -273,7 +273,7 @@ bool load (const char *file_name, void (**eip) (void), void **esp, char *full_na
       || ehdr.e_phentsize != sizeof (struct Elf32_Phdr)
       || ehdr.e_phnum > 1024) 
     {
-      printf ("load: %s: error loading executable\n", file_name);
+      // ("load: %s: error loading executable\n", file_name);
       goto done; 
     }
 
@@ -338,10 +338,10 @@ bool load (const char *file_name, void (**eip) (void), void **esp, char *full_na
 
   /*Calling Set up stack. */
   if (!setup_stack (esp, full_name)){
-    //printf("SETUP STACK FAILED\n\n");
+    ////("SETUP STACK FAILED\n\n");
     goto done;
   }
-  //printf("SETUP STACK PASSED\n\n");
+  ////("SETUP STACK PASSED\n\n");
   /* Start address. */
   *eip = (void (*) (void)) ehdr.e_entry;
 
@@ -481,7 +481,7 @@ static bool setup_stack (void **esp, char* full_name)
     }
   // Partiks code start
   char *token,*save_ptr;
-  char *argv[50],char_append[10]="\0"; int *addr[50];
+  char *argv[50],char_append[10]="\0"; int *addr[50]; char temp[30]="";
   int i=0,count=0;
 
   for(token = strtok_r (full_name, " ", &save_ptr); token != NULL; token = strtok_r (NULL, " ", &save_ptr))
@@ -489,32 +489,38 @@ static bool setup_stack (void **esp, char* full_name)
      argv[i]=palloc_get_page(0);
      strlcat(token, char_append, sizeof(char_append));
      strlcpy(argv[i], token, PGSIZE);
-     //printf("LOL %s\n",argv[i]);
+     ////("LOL %s\n",argv[i]);
      i++; count++;
   }
 
-  printf("INITIAL STACK AREA DUMP\n");
-  hex_dump(PHYS_BASE-128,PHYS_BASE-128, 128,true);
+  //("INITIAL STACK AREA DUMP\n");
+  //(PHYS_BASE-128,PHYS_BASE-128, 128,true);
 //PUSHING THE ARGUMENTS ONTO STACK --------------------
   for(i=count-1;i>-1;i--){
     *esp -=(strlen(argv[i]) + 1);
     addr[i]=palloc_get_page(0);
     *addr[i]=*esp;
-    //printf("%x\n%x\n%d\n%d\nSIZE: %d %d \n",*esp, *addr[i],*esp, *addr[i],sizeof(*esp),sizeof(*addr[i])); //,strlen(*esp), strlen(*addr[i]));
-    //printf("PUSHING %s IN STACK in POS %d \n\n",argv[i],i);
+    ////("%x\n%x\n%d\n%d\nSIZE: %d %d \n",*esp, *addr[i],*esp, *addr[i],sizeof(*esp),sizeof(*addr[i])); //,strlen(*esp), strlen(*addr[i]));
+    ////("PUSHING %s IN STACK in POS %d \n\n",argv[i],i);
     memcpy(*esp, argv[i], strlen(argv[i])+1);
   }
-  //printf("ARGV[0] = %s [1]= %s\n",argv[0],argv[1]);
-  printf("STARTING WORD ALIGN FROM ESP %x\n\n",*esp);
+  ////("ARGV[0] = %s [1]= %s\n",argv[0],argv[1]);
+  strlcpy(temp, argv[0],PGSIZE);
+  struct thread *curr = thread_current();
+  strlcpy (curr->name, temp, sizeof curr->name);
+  //printf("TEMP: %s %d\n",temp,thread_current()->tid);
+  //*curr->name=temp;
+
+  //("STARTING WORD ALIGN FROM ESP %x\n\n",*esp);
 //word alignment ------------------------------------
   int word_align=0;
   while((int) *esp%4 != 0){
     *esp-=1;
     word_align++;
   }
-  //printf("AFTER WORD ALIGNING %d %x %d\n",*esp,*esp,word_align);
+  ////("AFTER WORD ALIGNING %d %x %d\n",*esp,*esp,word_align);
   memset(*esp, 0, word_align);
-  //hex_dump(PHYS_BASE-128,PHYS_BASE-128, 128,true);
+  ////(PHYS_BASE-128,PHYS_BASE-128, 128,true);
 // SENTINEL PUSHING writing the dividing 4 bytes of zero -------------------
   //change 4 to 0 after debugging is complete
   *esp-=4;
@@ -522,7 +528,7 @@ static bool setup_stack (void **esp, char* full_name)
 //PUSHING ADDRESSES ONTO STACK --------------------
   for(i=count-1;i>-1;i--){
     *esp -= (sizeof(addr[i]));
-    //printf("ADDRS: %x ESP: %x\n",*addr[i],*esp);
+    ////("ADDRS: %x ESP: %x\n",*addr[i],*esp);
     memcpy(*esp, addr[i],sizeof(addr[i]));
     if(i == 0){
       addr[count] = palloc_get_page(0);
@@ -531,7 +537,7 @@ static bool setup_stack (void **esp, char* full_name)
   }
 // PUSHING argv[0]
   *esp -= 4;
-  //printf("ARGV[0] %x \n",*addr[count]);
+  ////("ARGV[0] %x \n",*addr[count]);
   memcpy(*esp, addr[count],sizeof(addr[count]));
 //PUSHING ARGC SPANNING OVER 4 BYTES
   *esp -= 4;
@@ -540,10 +546,10 @@ static bool setup_stack (void **esp, char* full_name)
   *esp-=4; int null=NULL;
   memcpy(*esp, &null, sizeof(null));
 
-  printf("AFTER STACK OPS ESP FINAL %d %x\n",*esp,*esp);
-  hex_dump(PHYS_BASE-128,PHYS_BASE-128, 128,true);
+  //("AFTER STACK OPS ESP FINAL %d %x\n",*esp,*esp);
+  //(PHYS_BASE-128,PHYS_BASE-128, 128,true);
 
-  printf("------SUCCESS OF SETUP_STACK : %d\n\n",success);
+  //("------SUCCESS OF SETUP_STACK : %d\n\n",success);
   //systemcall and stack setup sucessfull at VZW ANT 55B at 2111 on 2nd Dec
   //free(argv);
   //free(count);

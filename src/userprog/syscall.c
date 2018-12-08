@@ -39,29 +39,29 @@ struct file* obtain_file(int fd){
   	struct list_elem* next;
   	struct list_elem* e;
   	e = list_begin(&th->files);
-  	printf("BEGIB");
+  	//("BEGIB");
   	while(e!=list_end(&th->files)){
   		next = list_next(e);
-  		printf("NEXT");
+  		//("NEXT");
   		struct process_file* pro = list_entry(e, struct process_file, elem);
   		if (pro->fd == fd){
-  			printf("END");
+  			//("END");
   			return pro->file;
   		}
   		e = next;
   	}
-  	printf("NUlll");
+  	//("NUlll");
   	return NULL;
 }
 
 static void syscall_handler (struct intr_frame *f UNUSED) 
 {
-	printf("SYSCALL HANDLER REACHED\n\n");
+	//("SYSCALL HANDLER REACHED\n\n");
   	int *adr = f->esp;
   	int adr2 = *adr;
   	check_adr(adr);
-  		printf(" lod o %d \n",adr2);
-  		printf("THREAD %d \n",thread_current()->tid);
+  		//(" lod o %d \n",adr2);
+  		//("THREAD %d \n",thread_current()->tid);
   	switch(adr2){
 
 	  	case SYS_HALT:
@@ -72,20 +72,20 @@ static void syscall_handler (struct intr_frame *f UNUSED)
 
 	  	case SYS_EXIT:
 	  	{
-	  		printf("CHUTiya");
-	  		int *stts = *((int*)f->esp +1);
-	  		printf("STTS - 1\n");
-	  		check_adr((const void *) stts);
-	  		printf("STTS CHECK ADDR - 2 %d \n",stts);
+	  		//("CHUTiya");
+	  		int stts = *((int*)f->esp +1);
+	  		//("STTS - 1\n");
+	  		//check_adr(stts);
+	  		//("STTS CHECK ADDR - 2 %d \n",stts);
 	  		exit(stts);
-	  		printf("ADR EIT = %d",adr2);
+	  		//("ADR EIT = %d",adr2);
 	  		break;
 	  	}
 
 	  	case SYS_EXEC:
 	  	{
-	  		printf("ADR EXEC = %d",adr2);
-	  		printf("WHY THE HELL IS THiS SHIT HERE \n\n");
+	  		//("ADR EXEC = %d",adr2);
+	  		//("WHY THE HELL IS THiS SHIT HERE \n\n");
 	  		const char* cmdline = (char *) (* ((int *) f->esp + 1));
 	  		check_adr((const void *) cmdline);
 		    cmdline = check_page((const void *) cmdline);
@@ -163,15 +163,26 @@ static void syscall_handler (struct intr_frame *f UNUSED)
 	*/
 	  	case SYS_WRITE:
 	  	{
-	  		printf("WEIRD WRITE CALL\n\n");
+	  		//("WEIRD WRITE CALL\n\n");
 	      //int *fd = ++(*adr);
-	  		int fd = *((int*) f->esp + 1);
-	      void* buffer = (void *) (* ((int *) f->esp + 2));
+	  		int fd = *((int*)f->esp + 1);
+	      void* buffer = (void*)(*((int*)f->esp + 2));
 	      unsigned size = *((unsigned *) f-> esp + 3);
-	   
-	      check_adr((const void *)fd);
+	      //("fd address:: %p \n" ,fd );
+	   		//("fd check 1\n");
+	      //check_adr(fd);
+
+	      //("buffer address:: %p \n" ,buffer );
+	      //("buff check\n");
 	      check_adr(buffer);
-	      check_adr((const void *)size);
+
+
+	      //("size address:: %p \n" ,size );
+	      //("size check\n");
+	      //check_adr(size);
+
+
+	      //("all check\n");
 		  
 		  char *temp_buff = (char *)buffer;
 	      while(temp_buff<size){
@@ -179,8 +190,9 @@ static void syscall_handler (struct intr_frame *f UNUSED)
 	      	temp_buff++;
 	      }
 	      buffer = check_page((const void *)buffer);
-	      
+	      //("write reached");
 	      f->eax = write(fd, buffer, (unsigned)size);
+	      //("ENDIng");
 	      break;
 	  	}
 	/*
@@ -223,9 +235,11 @@ static void syscall_handler (struct intr_frame *f UNUSED)
 	      break;
 	 */
 	      default:
-	      printf("DEFAULT CAME FROM SWITCH IN SYSCALL.c\n");
-	      thread_exit();
-	      break;
+	      {
+		      //("DEFAULT CAME FROM SWITCH IN SYSCALL.c\n");
+		      thread_exit();
+		      break;
+	  		}
   	}
 
 }
@@ -236,12 +250,14 @@ void halt(){
 }
 
 void exit(int status){
-	printf("MEA EXIT AYA %d\n\n",status);
-	//thread_exit();
+
+	//thread_current()->exit_status = status;
+	printf("%s: exit(%d)\n", thread_current()->name, status);
+	thread_exit();
 }
 
 pid_t my_exec(const char* cmd_line){
-	printf("MY_EXEC FUNTION HERE FROM SYSCALL.C\n");
+	//("MY_EXEC FUNTION HERE FROM SYSCALL.C\n");
 
 }
 
@@ -300,15 +316,15 @@ int read(int fd, void* buffer, unsigned size){
 
 int write(int fd, const void* buffer, unsigned size){
 	int len;
-	printf("FD BHOS = %d \n",fd);
+	//("FD BHOS = %d \n",fd);
 	if (fd == 1){
 		putbuf (buffer, size); // from stdio.h
-		printf("PUTBUF %d\n",size);
+		//("PUTBUF %d\n",size);
       	return size;
 	}
 
 	lock_acquire(&file_lock);
-	printf("OBTAIN\n");
+	//("OBTAIN\n");
 	struct file *file_input = obtain_file(fd);
       if(!file_input){
         lock_release(&file_lock);
@@ -336,22 +352,21 @@ void close(int fd){
 
 
 void check_adr(const char *adr_to_check){
+	//("%p", adr_to_check );
 	if(!is_user_vaddr (adr_to_check)){
+		//("is_user_vaddr\n");
 		exit(INVALID);
 	}
 	else if(adr_to_check == NULL){
-		exit(INVALID);
-	}
-	else if(adr_to_check < (void *)0x08048000){
+		//("NULLLL \n");
 		exit(INVALID);
 	}
 
-	void *pntr_page = pagedir_get_page(thread_current()->pagedir, adr_to_check);
-  	if (!pntr_page){
-      exit(INVALID);
-    }
-  	
-  	return (int) pntr_page;
+	else if(adr_to_check < (void *) 0x08048000){
+		//("virtual addre \n");
+		exit(INVALID);
+	}
+
 }
 
 void check_page(const char *page_to_check){
