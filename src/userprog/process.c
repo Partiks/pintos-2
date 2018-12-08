@@ -62,7 +62,6 @@ static void start_process (void *file_name_)
   if_.gs = if_.fs = if_.es = if_.ds = if_.ss = SEL_UDSEG;
   if_.cs = SEL_UCSEG;
   if_.eflags = FLAG_IF | FLAG_MBS;
-  printf("<44> %s %s\n",file_name_,file_name);
 
   //partiks code start
 
@@ -246,7 +245,7 @@ bool load (const char *file_name, void (**eip) (void), void **esp, char *full_na
   bool success = false;
   int i;
 
-  printf("\n<45>%s %s\n\n",file_name, full_name);
+  //printf("\n<45>%s %s\n\n",file_name, full_name);
   /* Allocate and activate page directory. */
   t->pagedir = pagedir_create ();
   if (t->pagedir == NULL) 
@@ -333,8 +332,7 @@ bool load (const char *file_name, void (**eip) (void), void **esp, char *full_na
         }
     }
 
-  /* Set up stack. */
-  printf("----- REACHED nSETUP_STACK %s\n",full_name);
+  /*Calling Set up stack. */
   if (!setup_stack (esp, full_name)){
     //printf("SETUP STACK FAILED\n\n");
     goto done;
@@ -478,38 +476,77 @@ static bool setup_stack (void **esp, char* full_name)
         palloc_free_page (kpage);
     }
   // Partiks code start
-  printf("\nSETUP_STACK %d \n\n",*esp);
   char *token,*save_ptr;
-  char *argv[50],char_append[10]="\0";
+  char *argv[50],char_append[10]="\0"; int *addr[50];
   int i=0,count=0;
-  printf("ESP INITIAL: %d %x %x\n\n",*esp,*esp,*esp);
 
   for(token = strtok_r (full_name, " ", &save_ptr); token != NULL; token = strtok_r (NULL, " ", &save_ptr))
   {
      argv[i]=palloc_get_page(0);
      strlcat(token, char_append, sizeof(char_append));
      strlcpy(argv[i], token, PGSIZE);
-     printf("LOL %s\n",argv[i]);
+     //printf("LOL %s\n",argv[i]);
      i++; count++;
   }
 
-  printf("ESP INITIAL: %d\n\n",*esp);
-  printf("AFTER PARSE OPS IN SETUP_STACK\n");
+  printf("INITIAL STACK AREA DUMP\n");
   hex_dump(PHYS_BASE-128,PHYS_BASE-128, 128,true);
-
-  for(i=0;i<count;i++){
-    *esp -=strlen(argv[i]) + 1;
-    printf("LOOP ESP INITIAL: %d %x %x\n\n",*esp,*esp,esp);
+//PUSHING THE ARGUMENTS ONTO STACK --------------------
+  for(i=count-1;i>-1;i--){
+    *esp -=(strlen(argv[i]) + 1);
+    addr[i]=palloc_get_page(0);
+    *addr[i]=*esp;
+    //printf("%x\n%x\n%d\n%d\nSIZE: %d %d \n",*esp, *addr[i],*esp, *addr[i],sizeof(*esp),sizeof(*addr[i])); //,strlen(*esp), strlen(*addr[i]));
+    //printf("PUSHING %s IN STACK in POS %d \n\n",argv[i],i);
     memcpy(*esp, argv[i], strlen(argv[i])+1);
   }
+  //printf("ARGV[0] = %s [1]= %s\n",argv[0],argv[1]);
+  printf("STARTING WORD ALIGN FROM ESP %x\n\n",*esp);
+//word alignment ------------------------------------
+  int word_align=0;
+  while((int) *esp%4 != 0){
+    *esp-=1;
+    word_align++;
+  }
+  //printf("AFTER WORD ALIGNING %d %x %d\n",*esp,*esp,word_align);
+  memset(*esp, 0, word_align);
+  //hex_dump(PHYS_BASE-128,PHYS_BASE-128, 128,true);
+// SENTINEL PUSHING writing the dividing 4 bytes of zero -------------------
+  //change 4 to 0 after debugging is complete
+  *esp-=4;
+  memset(*esp, 0, 4);
+//PUSHING ADDRESSES ONTO STACK --------------------
+  for(i=count-1;i>-1;i--){
+    *esp -= (sizeof(addr[i]));
+    //printf("ADDRS: %x ESP: %x\n",*addr[i],*esp);
+    memcpy(*esp, addr[i],sizeof(addr[i]));
+    if(i == 0){
+      addr[count] = palloc_get_page(0);
+      *addr[count] = *esp;
+    }
+  }
+// PUSHING argv[0]
+  *esp -= 4;
+  //printf("ARGV[0] %x \n",*addr[count]);
+  memcpy(*esp, addr[count],sizeof(addr[count]));
+//PUSHING ARGC SPANNING OVER 4 BYTES
+  *esp -= 4;
+  memcpy(*esp, &count, sizeof(count));
+//PUSHING LAST NULL POINTER AS FAKE RETURN ADDRESS
+  *esp-=4; int null=NULL;
+  memcpy(*esp, &null, sizeof(null));
 
-  printf("AFTER STACK OPS\n");
-  printf("ESP FINAL: %d %x %x\n\n",*esp,*esp,esp);
+  printf("AFTER STACK OPS ESP FINAL %d %x\n",*esp,*esp);
   hex_dump(PHYS_BASE-128,PHYS_BASE-128, 128,true);
-
 
   printf("------SUCCESS OF SETUP_STACK : %d\n\n",success);
   //systemcall and stack setup sucessfull at VZW ANT 55B at 2111 on 2nd Dec
+  //free(argv);
+  //free(count);
+  //free(i);
+  //free(addr);
+  //free(token);
+  //free(char_append);
   // Partiks code end */
   return success;
 }
