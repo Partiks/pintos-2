@@ -12,6 +12,7 @@
 #include "filesys/filesys.h"
 #include "devices/input.h"
 #include "devices/shutdown.h"
+//#include "userprog/process.c"
 
 typedef int pid_t;
 
@@ -29,7 +30,8 @@ int INVALID = -44;
 
 void syscall_init (void) 
 {
-  intr_register_int (0x30, 3, INTR_ON, syscall_handler, "syscall");
+	lock_init(&file_lock);
+  	intr_register_int (0x30, 3, INTR_ON, syscall_handler, "syscall");
 }
 
 struct file* obtain_file(int fd){
@@ -50,167 +52,169 @@ struct file* obtain_file(int fd){
   	return NULL;
 }
 
-static void
-syscall_handler (struct intr_frame *f UNUSED) 
+static void syscall_handler (struct intr_frame *f UNUSED) 
 {
 	printf("SYSCALL HANDLER REACHED\n\n");
-  int *adr = f->esp;
-  int adr2 = *adr;
-  check_adr(adr);
-  switch(adr2){
-  	case SYS_HALT:
-  		halt();
-  		break;
+  	int *adr = f->esp;
+  	int adr2 = *adr;
+  	check_adr(adr);
+  	switch(adr2){
 
-  	case SYS_EXIT:
-  	{
-  		int *stts = ++(*adr);
-  		check_adr((const void *) stts);
-  		exit(stts);
-  		break;
+	  	case SYS_HALT:
+	  		halt();
+	  		break;
+
+	  	case SYS_EXIT:
+	  	{
+	  		int *stts = ++(*adr);
+	  		check_adr((const void *) stts);
+	  		exit(stts);
+	  		break;
+	  	}
+
+	  	case SYS_EXEC:
+	  	{
+	  		int* cmdln = ++(*adr);
+	  		check_adr((const void *) cmdln);
+	  		check_adr((const void *) cmdln + 1);
+		    cmdln = check_page((const void *) cmdln);
+	  		f->eax = my_exec((const void*) cmdln);
+	  		break;
+	  	}
+
+	  	case SYS_WAIT:
+	  	{
+	  		int *proid = ++(*adr);
+	      	check_adr((const void *) proid);
+	      	f->eax = process_wait(proid);
+	      	break;
+	    }
+	/*
+	  	case SYS_CREATE:
+	      int *fle = ++(*adr);
+	      int *int_size = *(adr+2);
+	      check_adr((const void *)fle);
+	      check_adr((const void *)int_size);
+	      fle = check_page((const void *)fle);
+	      f->eax = create((const void*) fle, int_size);
+	      break;
+
+	  	case SYS_REMOVE:
+	      int *fle = ++(*adr);
+	      check_adr((const void *) fle);
+	      fle = check_page((const void *)fle);
+	      f->eax = remove((const void*) fle);
+	      break;
+
+	  	case SYS_OPEN:
+	      int *fle = ++(*adr);
+	      check_adr((const void *) fle);
+	      fle = check_page((const void *)fle);
+	      lock_acquire(&file_lock);
+	      f->eax = open((const void*) fle);
+	      lock_release(&file_lock);
+	      break;
+
+	  	case SYS_FILESIZE:
+	      int *fd = ++(*adr);
+	      check_adr((const void *) fd);
+	      lock_acquire(&file_lock);
+	      struct file *file_input = obtain_file(fd)
+	      if(file_input){
+	        f->eax = filesize((const void*) file_input);
+	        lock_release(&file_lock);
+	      }
+	      else{
+	        lock_release(&file_lock);
+	        exit(INVALID);
+	      }
+	      break;
+
+	  	case SYS_READ:
+	      int *fd = ++(*adr);
+	      int *buff = *(adr+2);
+	      int *sze = *(adr+3);
+	   
+	      check_adr((const void *)fd);
+	      check_adr((const void *)buff);
+	      check_adr((const void *)sze);
+		  
+		  char *temp_buff = (char *)buff
+	      while(temp_buff<sze){
+	      	check_adr(temp_buff);
+	      	temp_buff++;
+	      }
+
+	      buff = check_page((const void *)buff);
+	      
+	      f->eax = read(fd, (const void*) buff, (unsigned)sze);
+	      break;
+	*/
+	  	case SYS_WRITE:
+	  	{
+	  		printf("WEIRD WRITE CALL\n\n");
+	      int *fd = ++(*adr);
+	      int *buff = *(adr+2);
+	      int *sze = *(adr+3);
+	   
+	      check_adr((const void *)fd);
+	      check_adr((const void *)buff);
+	      check_adr((const void *)sze);
+		  
+		  char *temp_buff = (char *)buff;
+	      while(temp_buff<sze){
+	      	check_adr(temp_buff);
+	      	temp_buff++;
+	      }
+	      buff = check_page((const void *)buff);
+	      
+	      f->eax = write(fd, (const void*) buff, (unsigned)sze);
+	      break;
+	  	}
+	/*
+	  	case SYS_SEEK:
+	      int *fd = ++(*adr);
+	      int *pos = *(adr+2);
+	      check_adr((const void *)fd);
+	      check_adr((const void *)pos);
+	      lock_acquire(&file_lock);
+	      struct file *file_input = obtain_file(fd)
+	      if(file_input){
+	        f->eax = seek((const void*) file_input , pos);
+	        lock_release(&file_lock);
+	      }
+	      else{
+	        lock_release(&file_lock);
+	        exit(INVALID);
+	      }
+	      break;
+
+	  	case SYS_TELL:
+	      int *fd = ++(*adr);
+	      check_adr((const void *) fd);
+	      lock_acquire(&file_lock);
+	      struct file *file_input = obtain_file(fd)
+	      if(file_input){
+	        f->eax = tell((const void*) file_input);
+	        lock_release(&file_lock);
+	      }
+	      else{
+	        lock_release(&file_lock);
+	        exit(INVALID);
+	      }
+	      break;
+
+	  	case SYS_CLOSE:
+	      int *fd = ++(*adr);
+	      check_adr((const void *) fd);
+	      close(fd);
+	      break;
+	 */
+	      default:
+	      printf("DEFAULT CAME FROM SWITCH IN SYSCALL.c\n");
+	      thread_exit();
+	      break;
   	}
-/*
-  	case SYS_EXEC:
-  		int *cmdln = ++(*adr);
-  		check_adr((const void *) cmdln);
-      cmdln = check_page((const void *) cmdln);
-  		f->eax = exec((const void*) cmdln);
-  		break;
-
-  	case SYS_WAIT:
-      int *proid = ++(*adr);
-      check_adr((const void *) proid);
-      f->eax = wait(proid);
-      break;
-
-  	case SYS_CREATE:
-      int *fle = ++(*adr);
-      int *int_size = *(adr+2);
-      check_adr((const void *)fle);
-      check_adr((const void *)int_size);
-      fle = check_page((const void *)fle);
-      f->eax = create((const void*) fle, int_size);
-      break;
-
-  	case SYS_REMOVE:
-      int *fle = ++(*adr);
-      check_adr((const void *) fle);
-      fle = check_page((const void *)fle);
-      f->eax = remove((const void*) fle);
-      break;
-
-  	case SYS_OPEN:
-      int *fle = ++(*adr);
-      check_adr((const void *) fle);
-      fle = check_page((const void *)fle);
-      lock_acquire(&file_lock);
-      f->eax = open((const void*) fle);
-      lock_release(&file_lock);
-      break;
-
-  	case SYS_FILESIZE:
-      int *fd = ++(*adr);
-      check_adr((const void *) fd);
-      lock_acquire(&file_lock);
-      struct file *file_input = obtain_file(fd)
-      if(file_input){
-        f->eax = filesize((const void*) file_input);
-        lock_release(&file_lock);
-      }
-      else{
-        lock_release(&file_lock);
-        exit(INVALID);
-      }
-      break;
-
-  	case SYS_READ:
-      int *fd = ++(*adr);
-      int *buff = *(adr+2);
-      int *sze = *(adr+3);
-   
-      check_adr((const void *)fd);
-      check_adr((const void *)buff);
-      check_adr((const void *)sze);
-	  
-	  char *temp_buff = (char *)buff
-      while(temp_buff<sze){
-      	check_adr(temp_buff);
-      	temp_buff++;
-      }
-
-      buff = check_page((const void *)buff);
-      
-      f->eax = read(fd, (const void*) buff, (unsigned)sze);
-      break;
-*/
-  	case SYS_WRITE:
-  	{
-  		printf("WEIRD WRITE CALL\n\n");
-      int *fd = ++(*adr);
-      int *buff = *(adr+2);
-      int *sze = *(adr+3);
-   
-      check_adr((const void *)fd);
-      check_adr((const void *)buff);
-      check_adr((const void *)sze);
-	  
-	  char *temp_buff = (char *)buff;
-      while(temp_buff<sze){
-      	check_adr(temp_buff);
-      	temp_buff++;
-      }
-      buff = check_page((const void *)buff);
-      
-      f->eax = write(fd, (const void*) buff, (unsigned)sze);
-      printf("AYU\n");
-      break;
-  	}
-/*
-  	case SYS_SEEK:
-      int *fd = ++(*adr);
-      int *pos = *(adr+2);
-      check_adr((const void *)fd);
-      check_adr((const void *)pos);
-      lock_acquire(&file_lock);
-      struct file *file_input = obtain_file(fd)
-      if(file_input){
-        f->eax = seek((const void*) file_input , pos);
-        lock_release(&file_lock);
-      }
-      else{
-        lock_release(&file_lock);
-        exit(INVALID);
-      }
-      break;
-
-  	case SYS_TELL:
-      int *fd = ++(*adr);
-      check_adr((const void *) fd);
-      lock_acquire(&file_lock);
-      struct file *file_input = obtain_file(fd)
-      if(file_input){
-        f->eax = tell((const void*) file_input);
-        lock_release(&file_lock);
-      }
-      else{
-        lock_release(&file_lock);
-        exit(INVALID);
-      }
-      break;
-
-  	case SYS_CLOSE:
-      int *fd = ++(*adr);
-      check_adr((const void *) fd);
-      close(fd);
-      break;
- */
-      default:
-      printf("DEFAULT AYU\n");
-      thread_exit();
-      break;
-  }
-
-
 
 }
 
@@ -223,7 +227,8 @@ void exit(int status){
 
 }
 
-pid_t exec(const char* cmd_line){
+pid_t my_exec(const char* cmd_line){
+	printf("MY_EXEC FUNTION HERE FROM SYSCALL.C\n");
 
 }
 
@@ -288,16 +293,15 @@ int write(int fd, const void* buffer, unsigned size){
       	return size;
 	}
 
-	//lock_acquire(&file_lock);
-	
-	struct file *file_input = obtain_file(fd);
+	lock_acquire(&file_lock);
 	printf("OBTAIN\n");
+	struct file *file_input = obtain_file(fd);
       if(!file_input){
         lock_release(&file_lock);
         exit(INVALID);
       }
     len = file_write(file_input, buffer, size);
-	//lock_release(&file_lock);
+	lock_release(&file_lock);
 	return len;
 }
 

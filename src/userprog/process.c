@@ -116,10 +116,14 @@ static void start_process (void *file_name_)
 
    This function will be implemented in problem 2-2.  For now, it
    does nothing. */
-int
-process_wait (tid_t child_tid UNUSED) 
+int process_wait (tid_t child_tid UNUSED) 
 {
-  while(1);
+  int i=0;
+  for (i=0;i<4444444440402020202020202022;i++)
+  {
+    
+  }
+  return -46;
 }
 
 /* Free the current process's resources. */
