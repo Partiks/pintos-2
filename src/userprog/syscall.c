@@ -60,7 +60,7 @@ static void syscall_handler (struct intr_frame *f UNUSED)
   	int *adr = f->esp;
   	int adr2 = *adr;
   	check_adr(adr);
-  		//(" lod o %d \n",adr2);
+  		//(" loL %d \n",adr2);
   		//("THREAD %d \n",thread_current()->tid);
   	switch(adr2){
 
@@ -316,7 +316,7 @@ int read(int fd, void* buffer, unsigned size){
 
 int write(int fd, const void* buffer, unsigned size){
 	int len;
-	//("FD BHOS = %d \n",fd);
+	//("FD  = %d \n",fd);
 	if (fd == 1){
 		putbuf (buffer, size); // from stdio.h
 		//("PUTBUF %d\n",size);
