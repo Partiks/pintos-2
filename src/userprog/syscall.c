@@ -35,12 +35,10 @@ void syscall_init (void)
 }
 
 struct file* obtain_file(int fd){
-
 	struct thread *th = thread_current();
   	struct list_elem* next;
   	struct list_elem* e;
   	e = list_begin(&th->files);
-<<<<<<< HEAD
   	//("BEGIB");
   	while(e!=list_end(&th->files)){
   		next = list_next(e);
@@ -48,21 +46,11 @@ struct file* obtain_file(int fd){
   		struct process_file* pro = list_entry(e, struct process_file, elem);
   		if (pro->fd == fd){
   			//("END");
-=======
-
-  	while(e!=list_end(&th->files)){
-  		next = list_next(e);
-  		struct process_file* pro = list_entry(e, struct process_file, elem);
-  		if (pro->fd == fd){
->>>>>>> parent of 41ae22f... intermeditae messed up write and exit dance
   			return pro->file;
   		}
   		e = next;
   	}
-<<<<<<< HEAD
   	//("NUlll");
-=======
->>>>>>> parent of 41ae22f... intermeditae messed up write and exit dance
   	return NULL;
 }
 
@@ -72,20 +60,18 @@ static void syscall_handler (struct intr_frame *f UNUSED)
   	int *adr = f->esp;
   	int adr2 = *adr;
   	check_adr(adr);
-<<<<<<< HEAD
   		//(" lod o %d \n",adr2);
   		//("THREAD %d \n",thread_current()->tid);
-=======
->>>>>>> parent of 41ae22f... intermeditae messed up write and exit dance
   	switch(adr2){
 
 	  	case SYS_HALT:
+	  	{
 	  		halt();
 	  		break;
+	  	}
 
 	  	case SYS_EXIT:
 	  	{
-<<<<<<< HEAD
 	  		//("CHUTiya");
 	  		int stts = *((int*)f->esp +1);
 	  		//("STTS - 1\n");
@@ -93,30 +79,17 @@ static void syscall_handler (struct intr_frame *f UNUSED)
 	  		//("STTS CHECK ADDR - 2 %d \n",stts);
 	  		exit(stts);
 	  		//("ADR EIT = %d",adr2);
-=======
-	  		int *stts = ++(*adr);
-	  		check_adr((const void *) stts);
-	  		exit(stts);
->>>>>>> parent of 41ae22f... intermeditae messed up write and exit dance
 	  		break;
 	  	}
 
 	  	case SYS_EXEC:
 	  	{
-<<<<<<< HEAD
 	  		//("ADR EXEC = %d",adr2);
 	  		//("WHY THE HELL IS THiS SHIT HERE \n\n");
 	  		const char* cmdline = (char *) (* ((int *) f->esp + 1));
 	  		check_adr((const void *) cmdline);
 		    cmdline = check_page((const void *) cmdline);
 	  		f->eax = my_exec((const void*) cmdline);
-=======
-	  		int* cmdln = ++(*adr);
-	  		check_adr((const void *) cmdln);
-	  		check_adr((const void *) cmdln + 1);
-		    cmdln = check_page((const void *) cmdln);
-	  		f->eax = my_exec((const void*) cmdln);
->>>>>>> parent of 41ae22f... intermeditae messed up write and exit dance
 	  		break;
 	  	}
 
@@ -190,7 +163,6 @@ static void syscall_handler (struct intr_frame *f UNUSED)
 	*/
 	  	case SYS_WRITE:
 	  	{
-<<<<<<< HEAD
 	  		//("WEIRD WRITE CALL\n\n");
 	      //int *fd = ++(*adr);
 	  		int fd = *((int*)f->esp + 1);
@@ -211,32 +183,16 @@ static void syscall_handler (struct intr_frame *f UNUSED)
 
 
 	      //("all check\n");
-=======
-	  		printf("WEIRD WRITE CALL\n\n");
-	      int *fd = ++(*adr);
-	      int *buff = *(adr+2);
-	      int *sze = *(adr+3);
-	   
-	      check_adr((const void *)fd);
-	      check_adr((const void *)buff);
-	      check_adr((const void *)sze);
->>>>>>> parent of 41ae22f... intermeditae messed up write and exit dance
 		  
-		  char *temp_buff = (char *)buff;
-	      while(temp_buff<sze){
+		  char *temp_buff = (char *)buffer;
+	      while(temp_buff<size){
 	      	check_adr(temp_buff);
 	      	temp_buff++;
 	      }
-<<<<<<< HEAD
 	      buffer = check_page((const void *)buffer);
 	      //("write reached");
 	      f->eax = write(fd, buffer, (unsigned)size);
 	      //("ENDIng");
-=======
-	      buff = check_page((const void *)buff);
-	      
-	      f->eax = write(fd, (const void*) buff, (unsigned)sze);
->>>>>>> parent of 41ae22f... intermeditae messed up write and exit dance
 	      break;
 	  	}
 	/*
@@ -244,7 +200,7 @@ static void syscall_handler (struct intr_frame *f UNUSED)
 	      int *fd = ++(*adr);
 	      int *pos = *(adr+2);
 	      check_adr((const void *)fd);
-	      check_adr((const void *)pos);
+	      check_adr((const void *)pos);=
 	      lock_acquire(&file_lock);
 	      struct file *file_input = obtain_file(fd)
 	      if(file_input){
@@ -295,12 +251,9 @@ void halt(){
 
 void exit(int status){
 
-<<<<<<< HEAD
 	//thread_current()->exit_status = status;
 	printf("%s: exit(%d)\n", thread_current()->name, status);
 	thread_exit();
-=======
->>>>>>> parent of 41ae22f... intermeditae messed up write and exit dance
 }
 
 pid_t my_exec(const char* cmd_line){
@@ -363,16 +316,10 @@ int read(int fd, void* buffer, unsigned size){
 
 int write(int fd, const void* buffer, unsigned size){
 	int len;
-<<<<<<< HEAD
 	//("FD BHOS = %d \n",fd);
 	if (fd == 1){
 		putbuf (buffer, size); // from stdio.h
 		//("PUTBUF %d\n",size);
-=======
-
-	if (fd == 1){
-		putbuf (buffer, size); // from stdio.h
->>>>>>> parent of 41ae22f... intermeditae messed up write and exit dance
       	return size;
 	}
 
