@@ -1,0 +1,12 @@
+FAIL
+Kernel panic in run: PANIC at ../../userprog/exception.c:100 in kill(): Kernel bug - unexpected interrupt in kernel
+Call stack: 0xc00287cf 0xc002bfb6 0x80480b1
+Translation of call stack:
+In kernel.o:
+0xc00287cf: debug_panic (.../../lib/kernel/debug.c:38)
+0xc002bfb6: syscall_handler (...../userprog/syscall.c:200)
+In tests/userprog/sc-boundary-3:
+0x080480b1: test_main (...erprog/sc-boundary-3.c:19)
+Translations of user virtual addresses above are based on a guess at
+the binary to use.  If this guess is incorrect, then those
+translations will be misleading.

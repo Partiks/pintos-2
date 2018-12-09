@@ -17,9 +17,21 @@
 #include "threads/palloc.h"
 #include "threads/thread.h"
 #include "threads/vaddr.h"
+#include "../../lib/kernel/list.h"
+#include "threads/malloc.h"
 
+//partiks code start
+struct child{
+  int pid;
+  struct thread *parent_pid;
+  int alive; //0 means dead and 1 means alive
+  int exit_status;
+  struct list_elem elem;
+};
+//partiks code end
 
 static thread_func start_process NO_RETURN;
+
 static bool load (const char *cmdline, void (**eip) (void), void **esp, char *full_name);
 
 /* Starts a new thread running a user program loaded from
@@ -28,6 +40,7 @@ static bool load (const char *cmdline, void (**eip) (void), void **esp, char *fu
    thread id, or TID_ERROR if the thread cannot be created. */
 tid_t process_execute (const char *file_name) 
 {
+  ////printf("----------------PROCESS_EXECUTE CALLED WITH %s\n",file_name);
   char *fn_copy;
   tid_t tid;
   /* Make a copy of FILE_NAME.
@@ -37,15 +50,27 @@ tid_t process_execute (const char *file_name)
     return TID_ERROR;
   }
   strlcpy (fn_copy, file_name, PGSIZE);
-  
-  //partiks code here
-  
-  //end partiks code */
 
   /* Create a new thread to execute FILE_NAME. */
   tid = thread_create (file_name, PRI_DEFAULT, start_process, fn_copy);
-  if (tid == TID_ERROR)
+  if (tid == TID_ERROR){
     palloc_free_page (fn_copy); 
+  }
+  else{
+  //partiks code for wait and child tracking for parent processeshere
+    struct child *c = (struct child *) malloc(sizeof(struct child));
+    c->pid = NULL;
+    ////printf("MALLOC SUCCESSFUL\n");
+    ////printf("TID: %d ----\n\n",tid);
+    //according to what I read probably in PintOs documentation, TID is used for referencing kernel thread and pid to reference user level thread.
+    c->pid = tid;
+    c->alive = 1;
+    list_push_back(&thread_current()->child_list, &c->elem);
+    //pushed the child with pid onto the child list of parent
+  ////printf("AFTER LIST PUSH %d --------------\n\n",tid);
+  //end partiks code */
+  }
+
   return tid;
 }
 
@@ -118,18 +143,49 @@ static void start_process (void *file_name_)
    does nothing. */
 int process_wait (tid_t child_tid UNUSED) 
 {
+  static int wait_log[50]; //storing each process's info in pairs. 0 will contain pid and 1 will contain it's return value. Max 25 processes can be logged using this way in this array.
+  static int count=0;
+  //partiks code start
+  struct child *b = (struct child *) malloc(sizeof(struct child));
+  for(struct list_elem* c = list_begin(&thread_current()->child_list); c != list_end(&thread_current()->child_list); c = list_next(c))
+  {
+    b = list_entry(c,  struct child, elem);
+    if (b->pid == child_tid)
+    {
+      wait_log[count]=b->pid; count++;
+      //printf("\n\n----------WAIT PID MATCH FOUND %d\n\n", child_tid);
+      sema_down(&thread_current()->waiting_for_child);
+      while(b->alive == 1) //while child process is alive parent waits
+      {
+        //do nothing;
+      }
+      wait_log[count++]=b->exit_status;
+    }
+    else{
+      //check for already dead child processes in wait_log
+      //int i;
+      //while(i=0;i<count;i+=2){
+//        if(wait_log)
+      //}
+      //there are no child processes
+    }
+    //struct thread *t = list_entry(c, struct thread, list_elem);
+    ////printf("\n\n LIST %d \n\n",t->tid);
+  }
   int i=0;
   for (i=0;i<4444446;i++)
   {
     
   }
-  return -46;
+  //partiks code end
+  return 0;
 }
 
 /* Free the current process's resources. */
 void
 process_exit (void)
 {
+  //printf("-------PROCESS_EXIT CALLED \n\n\n");
   struct thread *cur = thread_current ();
   uint32_t *pd;
 
@@ -508,7 +564,7 @@ static bool setup_stack (void **esp, char* full_name)
   strlcpy(temp, argv[0],PGSIZE);
   struct thread *curr = thread_current();
   strlcpy (curr->name, temp, sizeof curr->name);
-  //printf("TEMP: %s %d\n",temp,thread_current()->tid);
+  ////printf("TEMP: %s %d\n",temp,thread_current()->tid);
   //*curr->name=temp;
 
   //("STARTING WORD ALIGN FROM ESP %x\n\n",*esp);
@@ -547,7 +603,11 @@ static bool setup_stack (void **esp, char* full_name)
   memcpy(*esp, &null, sizeof(null));
 
   //("AFTER STACK OPS ESP FINAL %d %x\n",*esp,*esp);
-  //(PHYS_BASE-128,PHYS_BASE-128, 128,true);
+  //hex_dump(PHYS_BASE-128,PHYS_BASE-128, 128,true);
+  //printf("\n*esp=%x\n\n",*esp);
+  //hex_dump(*esp,PHYS_BASE-128, 128,true);
+  //printf("\n*esp=%x\n\n",*esp);
+  //hex_dump(PHYS_BASE-128,PHYS_BASE-128, 128,true);
 
   //("------SUCCESS OF SETUP_STACK : %d\n\n",success);
   //systemcall and stack setup sucessfull at VZW ANT 55B at 2111 on 2nd Dec

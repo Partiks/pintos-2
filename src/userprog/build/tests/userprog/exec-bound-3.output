@@ -1,0 +1,33 @@
+Copying tests/userprog/exec-bound-3 to scratch partition...
+qemu-system-i386 -device isa-debug-exit -hda /tmp/Z4I7gy_U_a.dsk -m 4 -net none -nographic -monitor null
+PiLo hda1
+Loading..........
+Kernel command line: -q -f extract run exec-bound-3
+Pintos booting with 3,968 kB RAM...
+367 pages available in kernel pool.
+367 pages available in user pool.
+Calibrating timer...  209,510,400 loops/s.
+hda: 5,040 sectors (2 MB), model "QM00001", serial "QEMU HARDDISK"
+hda1: 173 sectors (86 kB), Pintos OS kernel (20)
+hda2: 4,096 sectors (2 MB), Pintos file system (21)
+hda3: 106 sectors (53 kB), Pintos scratch (22)
+filesys: using hda2
+scratch: using hda3
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'exec-bound-3' into the file system...
+Erasing ustar archive...
+Executing 'exec-bound-3':
+(exec-bound-3) begin
+(exec-bound-3) should have killed process: FAILED
+exec-bound-3: exit(1)
+Execution of 'exec-bound-3' complete.
+Timer: 88 ticks
+Thread: 0 idle ticks, 86 kernel ticks, 2 user ticks
+hda2 (filesys): 80 reads, 216 writes
+hda3 (scratch): 105 reads, 2 writes
+Console: 937 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...

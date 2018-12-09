@@ -1,0 +1,103 @@
+Copying tests/userprog/wait-simple to scratch partition...
+Copying tests/userprog/child-simple to scratch partition...
+qemu-system-i386 -device isa-debug-exit -hda /tmp/C0zeRQfDCj.dsk -m 4 -net none -nographic -monitor null
+PiLo hda1
+Loading..........
+Kernel command line: -q -f extract run wait-simple
+Pintos booting with 3,968 kB RAM...
+367 pages available in kernel pool.
+367 pages available in user pool.
+Calibrating timer...  340,377,600 loops/s.
+hda: 5,040 sectors (2 MB), model "QM00001", serial "QEMU HARDDISK"
+hda1: 173 sectors (86 kB), Pintos OS kernel (20)
+hda2: 4,096 sectors (2 MB), Pintos file system (21)
+hda3: 202 sectors (101 kB), Pintos scratch (22)
+filesys: using hda2
+scratch: using hda3
+Formatting file system...done.
+Boot complete.
+Extracting ustar archive from scratch device into file system...
+Putting 'wait-simple' into the file system...
+Putting 'child-simple' into the file system...
+Erasing ustar archive...
+Executing 'wait-simple':
+
+
+----------WAIT PID MATCH FOUND 3
+
+bfffff80  00 00 00 00 00 00 00 00-00 00 00 00 00 00 00 00 |................|
+bfffff90  00 00 00 00 00 00 00 00-00 00 00 00 00 00 00 00 |................|
+bfffffa0  00 00 00 00 00 00 00 00-00 00 00 00 00 00 00 00 |................|
+bfffffb0  00 00 00 00 00 00 00 00-00 00 00 00 00 00 00 00 |................|
+bfffffc0  00 00 00 00 00 00 00 00-00 00 00 00 00 00 00 00 |................|
+bfffffd0  00 00 00 00 00 00 00 00-00 00 00 00 00 00 00 00 |................|
+bfffffe0  00 00 00 00 01 00 00 00-ec ff ff bf f4 ff ff bf |................|
+bffffff0  00 00 00 00 77 61 69 74-2d 73 69 6d 70 6c 65 00 |....wait-simple.|
+
+*esp=bfffffe0
+
+bfffffe0  00 00 00 00 00 00 00 00-00 00 00 00 00 00 00 00 |................|
+bffffff0  00 00 00 00 00 00 00 00-00 00 00 00 00 00 00 00 |................|
+c0000000  00 00 00 00 00 00 00 00-00 00 00 00 00 00 00 00 |................|
+c0000010  00 00 00 00 00 00 00 00-00 00 00 00 00 00 00 00 |................|
+c0000020  00 00 00 00 00 00 00 00-00 00 00 00 00 00 00 00 |................|
+c0000030  00 00 00 00 00 00 00 00-00 00 00 00 00 00 00 00 |................|
+c0000040  00 00 00 00 01 00 00 00-ec ff ff bf f4 ff ff bf |................|
+c0000050  00 00 00 00 77 61 69 74-2d 73 69 6d 70 6c 65 00 |....wait-simple.|
+(wait-simple) begin
+AYU 
+-------------------------CALLED WAIT
+
+wait-simple: exit(-1)
+-------PROCESS_EXIT CALLED 
+
+
+
+
+----------WAIT PID MATCH FOUND 4
+
+bfffff80  00 00 00 00 00 00 00 00-00 00 00 00 00 00 00 00 |................|
+bfffff90  00 00 00 00 00 00 00 00-00 00 00 00 00 00 00 00 |................|
+bfffffa0  00 00 00 00 00 00 00 00-00 00 00 00 00 00 00 00 |................|
+bfffffb0  00 00 00 00 00 00 00 00-00 00 00 00 00 00 00 00 |................|
+bfffffc0  00 00 00 00 00 00 00 00-00 00 00 00 00 00 00 00 |................|
+bfffffd0  00 00 00 00 00 00 00 00-00 00 00 00 00 00 00 00 |................|
+bfffffe0  01 00 00 00 e8 ff ff bf-f3 ff ff bf 00 00 00 00 |................|
+bffffff0  00 00 00 63 68 69 6c 64-2d 73 69 6d 70 6c 65 00 |...child-simple.|
+
+*esp=bfffffdc
+
+bfffffd0                                      00 00 00 00 |            ....|
+bfffffe0  00 00 00 00 00 00 00 00-00 00 00 00 00 00 00 00 |................|
+bffffff0  00 00 00 00 00 00 00 00-00 00 00 00 00 00 00 00 |................|
+c0000000  00 00 00 00 00 00 00 00-00 00 00 00 00 00 00 00 |................|
+c0000010  00 00 00 00 00 00 00 00-00 00 00 00 00 00 00 00 |................|
+c0000020  00 00 00 00 00 00 00 00-00 00 00 00 00 00 00 00 |................|
+c0000030  00 00 00 00 00 00 00 00-00 00 00 00 01 00 00 00 |................|
+c0000040  e8 ff ff bf f3 ff ff bf-00 00 00 00 00 00 00 63 |...............c|
+c0000050  68 69 6c 64 2d 73 69 6d-70 6c 65 00             |hild-simple.    |
+(child-simple) run
+child-simple: exit(81)
+-------PROCESS_EXIT CALLED 
+
+
+AYU 
+Page fault at 0xbfffff9c: not present error reading page in kernel context.
+Interrupt 0x0e (#PF Page-Fault Exception) at eip=0xc002c0cf
+ cr2=bfffff9c error=00000000
+ eax=bfffff98 ebx=bfffff98 ecx=00000780 edx=000003d4
+ esi=c0114fb0 edi=00000000 esp=c0031a4b ebp=c0114fe8
+ cs=0008 ds=0010 es=0010 ss=b3c0
+Kernel PANIC at ../../userprog/exception.c:100 in kill(): Kernel bug - unexpected interrupt in kernel
+Call stack: 0xc00287df 0xc002c0cf.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 162 ticks
+Thread: 0 idle ticks, 106 kernel ticks, 56 user ticks
+hda2 (filesys): 122 reads, 410 writes
+hda3 (scratch): 201 reads, 2 writes
+Console: 4287 characters output
+Keyboard: 0 keys pressed
+Exception: 1 page faults
+Powering off...
