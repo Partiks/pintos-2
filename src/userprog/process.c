@@ -23,7 +23,7 @@
 //partiks code start
 struct child{
   int pid;
-  struct thread *parent_pid;
+  struct thread* parent_pid;
   int alive; //0 means dead and 1 means alive
   int exit_status;
   struct list_elem elem;
@@ -52,20 +52,32 @@ tid_t process_execute (const char *file_name)
   strlcpy (fn_copy, file_name, PGSIZE);
 
   /* Create a new thread to execute FILE_NAME. */
+  struct thread *parent = thread_current();
+  printf("REAL PARENT %d\n",thread_current()->tid);
   tid = thread_create (file_name, PRI_DEFAULT, start_process, fn_copy);
+  printf("TIDs out: %d \n",thread_current()->tid);
   if (tid == TID_ERROR){
+    printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>WEIRD TID ERROR\n");
     palloc_free_page (fn_copy); 
   }
   else{
   //partiks code for wait and child tracking for parent processeshere
+    printf("---------------------- 1 TIDs out in else: %d \n",thread_current()->tid);
     struct child *c = (struct child *) malloc(sizeof(struct child));
     c->pid = NULL;
     ////printf("MALLOC SUCCESSFUL\n");
-    ////printf("TID: %d ----\n\n",tid);
+    printf("----------------------  2 PARENT TID: %d ----\n\n",thread_current()->tid);
     //according to what I read probably in PintOs documentation, TID is used for referencing kernel thread and pid to reference user level thread.
     c->pid = tid;
     c->alive = 1;
+    //struct thread *temp;
+    //temp = thread_current();
+    c->parent_pid = thread_current();
+    //thread_current()->parent_pid = thread_current();
+    printf("PARENT ADDRESS %x\n",c->parent_pid);
+    printf("----------------------  3 CHILD TID PTO BE USHED: %d \n",c->pid);
     list_push_back(&thread_current()->child_list, &c->elem);
+    printf("---------------------- 4 CHILD TID PUSHED: %d \n",c->pid);
     //pushed the child with pid onto the child list of parent
   ////printf("AFTER LIST PUSH %d --------------\n\n",tid);
   //end partiks code */
@@ -143,25 +155,35 @@ static void start_process (void *file_name_)
    does nothing. */
 int process_wait (tid_t child_tid UNUSED) 
 {
+  printf("------------------------ PROCESS_WAIT CALLED ON %d\n",child_tid);
   static int wait_log[50]; //storing each process's info in pairs. 0 will contain pid and 1 will contain it's return value. Max 25 processes can be logged using this way in this array.
   static int count=0;
   //partiks code start
   struct child *b = (struct child *) malloc(sizeof(struct child));
   for(struct list_elem* c = list_begin(&thread_current()->child_list); c != list_end(&thread_current()->child_list); c = list_next(c))
   {
+    printf("---------------------- PROC_WAIT \n");
     b = list_entry(c,  struct child, elem);
+    printf("---------------------- PROC_WAIT 2\n");
     if (b->pid == child_tid)
     {
+      printf("---------------------- PROC_WAIT 3\n");
       wait_log[count]=b->pid; count++;
+      printf("---------------------- PROC_WAIT 4\n");
       //printf("\n\n----------WAIT PID MATCH FOUND %d\n\n", child_tid);
       sema_down(&thread_current()->waiting_for_child);
-      while(b->alive == 1) //while child process is alive parent waits
-      {
+      printf("---------------------- PROC_WAIT 5\n");
+      //while(b->alive == 1) //while child process is alive parent waits
+      //{
         //do nothing;
-      }
+        //printf("---------------------- PROC_WAIT 6 \n");
+      //}
+      printf("---------------------- PROC_WAIT 7 \n");
       wait_log[count++]=b->exit_status;
+      printf("---------------------- PROC_WAIT 8 \n");
     }
     else{
+      printf("---------------------- PROC_WAIT ELSE9 \n");
       //check for already dead child processes in wait_log
       //int i;
       //while(i=0;i<count;i+=2){
@@ -172,12 +194,14 @@ int process_wait (tid_t child_tid UNUSED)
     //struct thread *t = list_entry(c, struct thread, list_elem);
     ////printf("\n\n LIST %d \n\n",t->tid);
   }
-  int i=0;
+  /*int i=0;
+  printf("---------------------- ENTERING ENDLESS LOOP 10 \n");
   for (i=0;i<4444446;i++)
   {
     
   }
-  //partiks code end
+  printf("----------------------- EXITING ENDLESS LOOP 11\n");
+  //partiks code end */
   return 0;
 }
 

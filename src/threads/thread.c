@@ -203,9 +203,10 @@ thread_create (const char *name, int priority,
   sf = alloc_frame (t, sizeof *sf);
   sf->eip = switch_entry;
   sf->ebp = 0;
-
+  printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>%d\n",thread_current()->tid);
   /* Add to run queue. */
   thread_unblock (t);
+  printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> AFTER UNBLOCK%d\n",thread_current()->tid);
 
   return tid;
 }
@@ -258,8 +259,7 @@ thread_name (void)
 /* Returns the running thread.
    This is running_thread() plus a couple of sanity checks.
    See the big comment at the top of thread.h for details. */
-struct thread *
-thread_current (void) 
+struct thread *thread_current (void) 
 {
   struct thread *t = running_thread ();
   
@@ -463,19 +463,20 @@ init_thread (struct thread *t, const char *name, int priority)
   ASSERT (t != NULL);
   ASSERT (PRI_MIN <= priority && priority <= PRI_MAX);
   ASSERT (name != NULL);
-
   memset (t, 0, sizeof *t);
   t->status = THREAD_BLOCKED;
   strlcpy (t->name, name, sizeof t->name);
   t->stack = (uint8_t *) t + PGSIZE;
   t->priority = priority;
   t->magic = THREAD_MAGIC;
+
   //dwijen code
   list_init(&t->files);
   list_init(&t->child_list);
   sema_init(&t->waiting_for_child,0);
   t->isparent=0;
   t->file_descriptor=2;
+  t->parent_pid = running_thread();
   //partiks code
   
   //code end here
@@ -483,6 +484,7 @@ init_thread (struct thread *t, const char *name, int priority)
   old_level = intr_disable ();
   list_push_back (&all_list, &t->allelem);
   intr_set_level (old_level);
+
 }
 
 /* Allocates a SIZE-byte frame at the top of thread T's stack and

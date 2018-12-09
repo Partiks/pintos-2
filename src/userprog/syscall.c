@@ -25,7 +25,7 @@ struct process_file {
 //partiks code start
 struct child{
   int pid;
-  struct thread *parent_pid;
+  struct thread* parent_pid;
   int alive; //0 means dead and 1 means alive
   int exit_status;
   struct list_elem elem;
@@ -41,7 +41,7 @@ int INVALID = -1;
 void syscall_init (void) 
 {
   lock_init(&file_lock);
-    intr_register_int (0x30, 3, INTR_ON, syscall_handler, "syscall");
+    intr_register_int (0x30, 3, INTR_ON, syscall_handler, "syscall\n");
 }
 
 struct file* obtain_file(int fd){
@@ -49,18 +49,18 @@ struct file* obtain_file(int fd){
     struct list_elem* next;
     struct list_elem* e;
     e = list_begin(&th->files);
-    //("BEGIN");
+    //("BEGIN\n");
     while(e!=list_end(&th->files)){
       next = list_next(e);
-      //("NEXT");
+      //("NEXT\n");
       struct process_file* pro = list_entry(e, struct process_file, elem);
       if (pro->fd == fd){
-        //("END");
+        //("END\n");
         return pro->file;
       }
       e = next;
     }
-    //("NUlll");
+    //("NUlll\n");
     return NULL;
 }
 
@@ -69,27 +69,7 @@ void halt(){
   shutdown_power_off();
 }
 
-void exit(int status){
-  //thread_current()->exit_status = status;
 
-  struct child *b = (struct child *) malloc(sizeof(struct child));
-  for(struct list_elem* c = list_begin(&thread_current()->parent_pid->child_list); c != list_end(&thread_current()->child_list); c = list_next(c))
-  {
-    b = list_entry(c,  struct child, elem);
-    if (b->pid == thread_current()->tid)
-    {
-      b->exit_status = 0;
-    }
-    else{
-      printf("NEVER SHOULD'VE COME HERE EXIT()\n");
-      //check for already dead child processes in wait_log
-    }
-  }
-
-  printf("%s: exit(%d)\n", thread_current()->name, status);
-  //process_exit();
-  thread_exit();
-}
 
 int wait(pid_t pid){
 
@@ -160,7 +140,7 @@ int write(int fd, const void* buffer, unsigned size){
   }
 
   lock_acquire(&file_lock);
-  //("OBTAIN\n");
+  //("OBTAIN\n\n");
   struct file *file_input = obtain_file(fd);
       if(!file_input){
         lock_release(&file_lock);
@@ -186,25 +166,6 @@ void close(int fd){
 
 }
 
-
-void check_adr(const char *adr_to_check){
-  //printf("%p", adr_to_check );
-  if(!is_user_vaddr (adr_to_check)){
-    //printf("is_user_vaddr\n");
-    exit(INVALID);
-  }
-  else if(adr_to_check == NULL){
-    //printf("NULLLL \n");
-    exit(INVALID);
-  }
-
-  else if(adr_to_check < (void *) 0x08048000){
-    //printf("virtual addre \n");
-    exit(INVALID);
-  }
-
-}
-
 int check_page(char *page_to_check){
   void *pntr_page = pagedir_get_page(thread_current()->pagedir, page_to_check);
     if (!pntr_page){
@@ -214,16 +175,73 @@ int check_page(char *page_to_check){
     return (int) pntr_page;
 }
 
+void exit(int status){
+  //thread_current()->exit_status = status;
+  printf("-------------------------------------- EXIT 1 %d\n",status);
+  struct child *b = (struct child *) malloc(sizeof(struct child));
+  printf("-------------------------------------- EXIT 2 THREAD %d\n",thread_current()->tid);
+  if(thread_current()->isparent == 0)
+  {
+    printf("--------------------------------SUSPECTED PAGE FAULT\n");
+    printf("-------------------------------PARENT ADDRESS: %x", thread_current()->parent_pid);
+    printf("---------------------------------NOPE< THAT FINE\n");
+    for(struct list_elem* c = list_begin(&thread_current()->parent_pid->child_list); c != list_end(&thread_current()->parent_pid->child_list); c = list_next(c))
+    {
+      printf("-------------------------------------- EXIT 3\n");
+      b = list_entry(c,  struct child, elem);
+      printf("-------------------------------------- EXIT 4\n");
+      if (b->pid == thread_current()->tid)
+      {
+        printf("-------------------------------------- EXIT 5\n");
+        b->exit_status = 0;
+        b->alive = 0;
+        sema_up(&b->parent_pid->waiting_for_child);
+      }
+      else{
+        printf("NEVER SHOULD'VE COME HERE EXIT()\n\n");
+        //check for already dead child processes in wait_log
+      }
+    }
+  }
+printf("-------------------------------------- THREAD TO EXIT: %d\n",thread_current()->tid);
+printf("-------------------------------------- EXIT 6\n");
+  printf("%s: exit(%d)\n", thread_current()->name, status);
+  printf("-------------------------------------- EXIT 7\n");
+  //process_exit();
+  thread_exit();
+}
+
+void check_adr(const char *adr_to_check){
+  printf("%p", adr_to_check );
+  if(!is_user_vaddr (adr_to_check)){
+    printf("is_user_vaddr\n\n");
+    exit(INVALID);
+  }
+  else if(adr_to_check == NULL){
+    printf("NULLLL \n\n");
+    exit(INVALID);
+  }
+
+  else if(adr_to_check < (void *) 0x08048000){
+    printf("virtual addre \n\n");
+    exit(INVALID);
+  }
+  else{
+    //printf("NO CONDITION SATISFOED IN CHECK_ADR\n\n");
+  }
+
+}
 
 static void syscall_handler (struct intr_frame *f UNUSED) 
 {
-  ("SYSCALL HANDLER REACHED\n\n");
     int *adr = f->esp;
     int adr2 = *adr;
+    printf("SYSCALL HANDLER REACHED %d\n\n\n",adr2);
     check_adr(adr);
       //(" lod o %d \n",adr2);
       //("THREAD %d \n",thread_current()->tid);
-    switch(adr2){
+    switch(adr2)
+    {
 
       case SYS_HALT:
       {
@@ -240,22 +258,30 @@ static void syscall_handler (struct intr_frame *f UNUSED)
 
       case SYS_EXEC:
       {
-        //printf("AYU \n");
+        //printf("AYU \n\n");
+        printf("-------------------------------------- EXEC 1 \n");
         char* cmdline = (* ((int *) f->esp + 1));
-        //printf("BAHU AYU\n");
+        printf("-------------------------------------- EXEC 2 \n");
+        //printf("BAHU AYU\n\n");
         check_adr(cmdline);
-
+        printf("-------------------------------------- EXEC 3 \n");
         cmdline = check_page((const char*)cmdline);
+        printf("-------------------------------------- EXEC 4 \n");
         thread_current()->isparent=1;
+        
+        printf("-------------------------------------- EXEC 5 \n");
         f->eax = process_execute(cmdline);
+        printf("-------------------------------------- EXEC 6 \n");
         break;
       }
 
       case SYS_WAIT:
       {
-        printf("-------------------------CALLED WAIT\n\n");
+        printf("-------------------------CALLED WAIT %d %d %d\n\n",thread_current()->tid),(* ((int *) f->esp + 1)),(* ((int *) f->esp + 2));
         int *proid = (* ((int *) f->esp + 1));
-        check_adr((const void *) proid);
+        printf("-------------------------- WAIT 2\n");
+        //check_adr((const void *) proid);
+        printf("--------------------------WAIT CALLED ON %d\n",proid);
         f->eax = process_wait(proid);
         break;
       }
@@ -264,17 +290,17 @@ static void syscall_handler (struct intr_frame *f UNUSED)
       {
         char *fle = (char *) (* ((int *) f->esp + 1));
         unsigned int_size = *((int*)f->esp +2);
-        //printf("1st stage \n \n");
+        //printf("1st stage \n \n\n");
         check_adr(fle);
-        //printf("2nd stage \n \n");
+        //printf("2nd stage \n \n\n");
         //check_adr(int_size );
-        //printf("3rd one \n \n");
+        //printf("3rd one \n \n\n");
         fle = check_page(fle);
-        //printf("final");
+        //printf("final\n");
         f->eax = create(fle, int_size);
-        //printf("last");
+        //printf("last\n");
         break;
-       }
+      }
 
     case SYS_REMOVE:
     {
@@ -283,7 +309,7 @@ static void syscall_handler (struct intr_frame *f UNUSED)
         fle = check_page((const void *)fle);
         f->eax = remove((const void*) fle);
         break;
-       }
+     }
 
     case SYS_OPEN:
     {
@@ -292,14 +318,15 @@ static void syscall_handler (struct intr_frame *f UNUSED)
         fle = check_page((const void *)fle);
         lock_acquire(&file_lock);
         struct file* file_get = filesys_open(fle);
-      if(file_get == NULL){
-         lock_release(&file_lock);
-      return INVALID;
-      }
+        if(file_get == NULL)
+        {
+           lock_release(&file_lock);
+          return INVALID;
+        }
         f->eax = open((const void*) file_get);
         lock_release(&file_lock);
         break;
-       }
+    }
 
       case SYS_FILESIZE:
       {
@@ -307,19 +334,21 @@ static void syscall_handler (struct intr_frame *f UNUSED)
         //check_adr((const void *) fd);
         lock_acquire(&file_lock);
         struct file *file_input = obtain_file(fd);
-        if(file_input){
+        if(file_input)
+        {
           f->eax = filesize((const void*) file_input);
           lock_release(&file_lock);
         }
-        else{
+        else
+        {
           lock_release(&file_lock);
           exit(INVALID);
         }
         break;
-       }
+      }
 
       case SYS_READ:
-        {
+      {
           int fd = *((int*)f->esp + 1);
           void* buffer = (void*)(*((int*)f->esp + 2));
           unsigned size = *((unsigned *) f-> esp + 3);
@@ -348,7 +377,8 @@ static void syscall_handler (struct intr_frame *f UNUSED)
        //check_adr(size);
       
       char *temp_buff = (char *)buffer;
-        while(temp_buff<size){
+        while(temp_buff<size)
+        {
           check_adr(temp_buff);
           temp_buff++;
         }
@@ -363,11 +393,13 @@ static void syscall_handler (struct intr_frame *f UNUSED)
         unsigned position = *((unsigned *) f-> esp + 2);
         lock_acquire(&file_lock);
         struct file *file_input = obtain_file(fd);
-        if(file_input){
+        if(file_input)
+        {
           seek((const void*) file_input , position);
           lock_release(&file_lock);
         }
-        else{
+        else
+        {
           lock_release(&file_lock);
           exit(INVALID);
         }
@@ -379,7 +411,8 @@ static void syscall_handler (struct intr_frame *f UNUSED)
         int fd = *((int*)f->esp + 1);
         lock_acquire(&file_lock);
         struct file *file_input = obtain_file(fd);
-        if(file_input){
+        if(file_input)
+        {
           f->eax = tell((const void*) file_input);
           lock_release(&file_lock);
         }
@@ -396,6 +429,11 @@ static void syscall_handler (struct intr_frame *f UNUSED)
         close(fd);
         break;
       }
-    }
 
+      default:
+      {
+        printf("DEAFULT REACHED\n\n");
+        thread_exit();
+      }
+    }
 }

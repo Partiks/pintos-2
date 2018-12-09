@@ -95,6 +95,8 @@ struct thread
     struct semaphore waiting_for_child;
     int file_descriptor;
     int isparent;
+    int haschildren;
+    struct thread* parent_pid;
 
     /* Shared between thread.c and synch.c. */
     struct list_elem elem;              /* List element. */
