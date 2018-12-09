@@ -1,17 +1,15 @@
 Copying tests/userprog/wait-simple to scratch partition...
 Copying tests/userprog/child-simple to scratch partition...
-qemu-system-i386 -device isa-debug-exit -hda /tmp/5kWbBcdAsn.dsk -m 4 -net none -nographic -monitor null
+qemu-system-i386 -device isa-debug-exit -hda /tmp/8oCEFDixPj.dsk -m 4 -net none -nographic -monitor null
 PiLo hda1
-Loading...........
+Loading..........
 Kernel command line: -q -f extract run wait-simple
 Pintos booting with 3,968 kB RAM...
 367 pages available in kernel pool.
 367 pages available in user pool.
->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>1
->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> AFTER UNBLOCK1
 Calibrating timer...  314,163,200 loops/s.
 hda: 5,040 sectors (2 MB), model "QM00001", serial "QEMU HARDDISK"
-hda1: 181 sectors (90 kB), Pintos OS kernel (20)
+hda1: 173 sectors (86 kB), Pintos OS kernel (20)
 hda2: 4,096 sectors (2 MB), Pintos file system (21)
 hda3: 202 sectors (101 kB), Pintos scratch (22)
 filesys: using hda2
@@ -23,125 +21,18 @@ Putting 'wait-simple' into the file system...
 Putting 'child-simple' into the file system...
 Erasing ustar archive...
 Executing 'wait-simple':
-REAL PARENT 1
->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>1
->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> AFTER UNBLOCK1
-TIDs out: 1 
----------------------- 1 TIDs out in else: 1 
-----------------------  2 PARENT TID: 1 ----
-
-PARENT ADDRESS c000e000
-----------------------  3 CHILD TID PTO BE USHED: 3 
----------------------- 4 CHILD TID PUSHED: 3 
------------------------- PROCESS_WAIT CALLED ON 3
----------------------- PROC_WAIT 
----------------------- PROC_WAIT 2
----------------------- PROC_WAIT 3
----------------------- PROC_WAIT 4
-SYSCALL HANDLER REACHED 9
-
-
-0xbfffff3cNO CONDITION SATISFOED IN CHECK_ADR
-
-0x804c420NO CONDITION SATISFOED IN CHECK_ADR
-
 (wait-simple) begin
-SYSCALL HANDLER REACHED 2
-
-
-0xbfffff74NO CONDITION SATISFOED IN CHECK_ADR
-
--------------------------------------- EXEC 1 
--------------------------------------- EXEC 2 
-0x804af0dNO CONDITION SATISFOED IN CHECK_ADR
-
--------------------------------------- EXEC 3 
--------------------------------------- EXEC 4 
--------------------------------------- EXEC 5 
-REAL PARENT 3
->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>3
->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> AFTER UNBLOCK3
-TIDs out: 3 
----------------------- 1 TIDs out in else: 3 
-----------------------  2 PARENT TID: 3 ----
-
-PARENT ADDRESS c010a000
-----------------------  3 CHILD TID PTO BE USHED: 4 
----------------------- 4 CHILD TID PUSHED: 4 
--------------------------------------- EXEC 6 
-SYSCALL HANDLER REACHED 3
-
-
-0xbfffff74NO CONDITION SATISFOED IN CHECK_ADR
-
--------------------------CALLED WAIT 3 20 -1072648324
-
--------------------------- WAIT 2
---------------------------WAIT CALLED ON 4
------------------------- PROCESS_WAIT CALLED ON 4
----------------------- PROC_WAIT 
----------------------- PROC_WAIT 2
----------------------- PROC_WAIT 3
----------------------- PROC_WAIT 4
-SYSCALL HANDLER REACHED 9
-
-
-0xbfffff3cNO CONDITION SATISFOED IN CHECK_ADR
-
-0x804c3c0NO CONDITION SATISFOED IN CHECK_ADR
-
 (child-simple) run
-SYSCALL HANDLER REACHED 1
-
-
-0xbfffff98NO CONDITION SATISFOED IN CHECK_ADR
-
--------------------------------------- EXIT 1 81
--------------------------------------- EXIT 2 THREAD 4
---------------------------------SUSPECTED PAGE FAULT
--------------------------------PARENT ADDRESS: c010a000---------------------------------NOPE< THAT FINE
--------------------------------------- EXIT 3
--------------------------------------- EXIT 4
--------------------------------------- EXIT 5
--------------------------------------- THREAD TO EXIT: 4
--------------------------------------- EXIT 6
 child-simple: exit(81)
--------------------------------------- EXIT 7
--------THREAD_EXIT CALLED 
-
-
----------------------- PROC_WAIT 5
----------------------- PROC_WAIT 7 
----------------------- PROC_WAIT 8 
-SYSCALL HANDLER REACHED 9
-
-
-0xbfffff1cNO CONDITION SATISFOED IN CHECK_ADR
-
-0x804c420NO CONDITION SATISFOED IN CHECK_ADR
-
-(wait-simple) wait(exec()) = 0
-SYSCALL HANDLER REACHED 9
-
-
-0xbfffff3cNO CONDITION SATISFOED IN CHECK_ADR
-
-0x804c420NO CONDITION SATISFOED IN CHECK_ADR
-
+(wait-simple) wait(exec()) = 81
 (wait-simple) end
-SYSCALL HANDLER REACHED 1
-
-
-0xbfffff9cNO CONDITION SATISFOED IN CHECK_ADR
-
--------------------------------------- EXIT 1 0
--------------------------------------- EXIT 2 THREAD 3
--------------------------------------- THREAD TO EXIT: 3
--------------------------------------- EXIT 6
 wait-simple: exit(0)
--------------------------------------- EXIT 7
--------THREAD_EXIT CALLED 
-
-
-
-TIMEOUT after 31 seconds of wall-clock time - load average: 0.74, 0.70, 0.74
+Execution of 'wait-simple' complete.
+Timer: 104 ticks
+Thread: 0 idle ticks, 99 kernel ticks, 6 user ticks
+hda2 (filesys): 122 reads, 410 writes
+hda3 (scratch): 201 reads, 2 writes
+Console: 1023 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...

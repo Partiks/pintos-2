@@ -203,10 +203,8 @@ thread_create (const char *name, int priority,
   sf = alloc_frame (t, sizeof *sf);
   sf->eip = switch_entry;
   sf->ebp = 0;
-  printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>%d\n",thread_current()->tid);
   /* Add to run queue. */
   thread_unblock (t);
-  printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> AFTER UNBLOCK%d\n",thread_current()->tid);
 
   return tid;
 }
@@ -286,7 +284,7 @@ thread_tid (void)
 void
 thread_exit (void) 
 {
-  printf("-------THREAD_EXIT CALLED \n\n\n");
+  //printf("-------THREAD_EXIT CALLED \n\n\n");
   ASSERT (!intr_context ());
 
 #ifdef USERPROG
@@ -476,6 +474,7 @@ init_thread (struct thread *t, const char *name, int priority)
   sema_init(&t->waiting_for_child,0);
   t->isparent=0;
   t->file_descriptor=2;
+  t->child_count=0;
   t->parent_pid = running_thread();
   //partiks code
   

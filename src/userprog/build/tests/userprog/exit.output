@@ -1,12 +1,12 @@
 Copying tests/userprog/exit to scratch partition...
-qemu-system-i386 -device isa-debug-exit -hda /tmp/Nv7IQKUmOK.dsk -m 4 -net none -nographic -monitor null
+qemu-system-i386 -device isa-debug-exit -hda /tmp/3R1o1LJK0o.dsk -m 4 -net none -nographic -monitor null
 PiLo hda1
 Loading..........
 Kernel command line: -q -f extract run exit
 Pintos booting with 3,968 kB RAM...
 367 pages available in kernel pool.
 367 pages available in user pool.
-Calibrating timer...  315,801,600 loops/s.
+Calibrating timer...  471,040,000 loops/s.
 hda: 5,040 sectors (2 MB), model "QM00001", serial "QEMU HARDDISK"
 hda1: 173 sectors (86 kB), Pintos OS kernel (20)
 hda2: 4,096 sectors (2 MB), Pintos file system (21)
@@ -19,35 +19,14 @@ Extracting ustar archive from scratch device into file system...
 Putting 'exit' into the file system...
 Erasing ustar archive...
 Executing 'exit':
-
-
-----------WAIT PID MATCH FOUND 3
-
 (exit) begin
 exit: exit(57)
--------PROCESS_EXIT CALLED 
-
-
-AYU 
-Page fault at 0xbfffff6c: not present error reading page in kernel context.
-Interrupt 0x0e (#PF Page-Fault Exception) at eip=0xc002c05f
- cr2=bfffff6c error=00000000
- eax=bfffff68 ebx=bfffff68 ecx=00000780 edx=000003d4
- esi=c010afb0 edi=00000000 esp=c00319df ebp=c010afe8
- cs=0008 ds=0010 es=0010 ss=5400
-Kernel PANIC at ../../userprog/exception.c:100 in kill(): Kernel bug - unexpected interrupt in kernel
-Call stack: 0xc00287df 0xc002c05f 0x804a3f5Page fault at 0xbfffffc0: not present error reading page in kernel context.
-Interrupt 0x0e (#PF Page-Fault Exception) at eip=0xc00261eb
- cr2=bfffffc0 error=00000000
- eax=0000000a ebx=bfffffc0 ecx=000007ab edx=000003d4
- esi=00000064 edi=c002f508 esp=c0031014 ebp=c010ae48
- cs=0008 ds=0010 es=0010 ss=a3f5
-Kernel PANIC recursion at ../../userprog/exception.c:100 in kill().
-Timer: 114 ticks
-Thread: 0 idle ticks, 110 kernel ticks, 4 user ticks
+Execution of 'exit' complete.
+Timer: 100 ticks
+Thread: 0 idle ticks, 98 kernel ticks, 2 user ticks
 hda2 (filesys): 61 reads, 208 writes
 hda3 (scratch): 101 reads, 2 writes
-Console: 1704 characters output
+Console: 841 characters output
 Keyboard: 0 keys pressed
-Exception: 2 page faults
+Exception: 0 page faults
 Powering off...

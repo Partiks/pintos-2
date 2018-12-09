@@ -96,6 +96,8 @@ struct thread
     int file_descriptor;
     int isparent;
     int haschildren;
+    int child_count;
+    int wait_log[50]; //storing each process's info in pairs. 0 will contain pid and 1 will contain it's return value. Max 25 processes can be logged using this way in this array.
     struct thread* parent_pid;
 
     /* Shared between thread.c and synch.c. */

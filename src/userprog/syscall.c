@@ -169,65 +169,64 @@ void close(int fd){
 int check_page(char *page_to_check){
   void *pntr_page = pagedir_get_page(thread_current()->pagedir, page_to_check);
     if (!pntr_page){
-      exit(INVALID);
+      //exit(INVALID);
+      return -1;
     }
     
     return (int) pntr_page;
 }
 
-void exit(int status){
+void exit(int status)
+{
   //thread_current()->exit_status = status;
-  printf("-------------------------------------- EXIT 1 %d\n",status);
+  //////printf("-------------------------------------- EXIT 1> , STATUS=%d\n",status);
   struct child *b = (struct child *) malloc(sizeof(struct child));
-  printf("-------------------------------------- EXIT 2 THREAD %d\n",thread_current()->tid);
-  if(thread_current()->isparent == 0)
-  {
-    printf("--------------------------------SUSPECTED PAGE FAULT\n");
-    printf("-------------------------------PARENT ADDRESS: %x", thread_current()->parent_pid);
-    printf("---------------------------------NOPE< THAT FINE\n");
+  //////printf("-------------------------------------- EXIT 2> THREAD %d\n",thread_current()->tid);
+  //if(thread_current()->isparent == 0)
+  //{
+    ////////////printf("-------------------------------PARENT ADDRESS: %x", thread_current()->parent_pid);
     for(struct list_elem* c = list_begin(&thread_current()->parent_pid->child_list); c != list_end(&thread_current()->parent_pid->child_list); c = list_next(c))
     {
-      printf("-------------------------------------- EXIT 3\n");
+      //////printf("-------------------------------------- EXIT 3\n");
       b = list_entry(c,  struct child, elem);
-      printf("-------------------------------------- EXIT 4\n");
+      //////printf("-------------------------------------- EXIT 4\n");
       if (b->pid == thread_current()->tid)
       {
-        printf("-------------------------------------- EXIT 5\n");
-        b->exit_status = 0;
+        //////printf("-------------------------------------- EXIT 5\n");
+        b->exit_status = status;
         b->alive = 0;
         sema_up(&b->parent_pid->waiting_for_child);
       }
       else{
-        printf("NEVER SHOULD'VE COME HERE EXIT()\n\n");
+        //////printf("NEVER SHOULD'VE COME HERE EXIT()\n\n");
         //check for already dead child processes in wait_log
       }
     }
-  }
-printf("-------------------------------------- THREAD TO EXIT: %d\n",thread_current()->tid);
-printf("-------------------------------------- EXIT 6\n");
+  //} //
+//////printf("-------------------------------------- THREAD TO EXIT: %d STATUS: %d\n",thread_current()->tid,status);
+//////printf("-------------------------------------- EXIT 6\n");
   printf("%s: exit(%d)\n", thread_current()->name, status);
-  printf("-------------------------------------- EXIT 7\n");
-  //process_exit();
+  //////printf("-------------------------------------- EXIT 7\n");
   thread_exit();
 }
 
 void check_adr(const char *adr_to_check){
-  printf("%p", adr_to_check );
+  ////////////printf("%p", adr_to_check );
   if(!is_user_vaddr (adr_to_check)){
-    printf("is_user_vaddr\n\n");
+    //////printf("is_user_vaddr\n\n");
     exit(INVALID);
   }
   else if(adr_to_check == NULL){
-    printf("NULLLL \n\n");
+    //////printf("NULLLL \n\n");
     exit(INVALID);
   }
 
   else if(adr_to_check < (void *) 0x08048000){
-    printf("virtual addre \n\n");
+    //////printf("virtual addre \n\n");
     exit(INVALID);
   }
   else{
-    //printf("NO CONDITION SATISFOED IN CHECK_ADR\n\n");
+    ////////////printf("NO CONDITION SATISFOED IN CHECK_ADR\n\n");
   }
 
 }
@@ -236,7 +235,7 @@ static void syscall_handler (struct intr_frame *f UNUSED)
 {
     int *adr = f->esp;
     int adr2 = *adr;
-    printf("SYSCALL HANDLER REACHED %d\n\n\n",adr2);
+    //printf("SYSCALL HANDLER REACHED %d\n\n\n",adr2);
     check_adr(adr);
       //(" lod o %d \n",adr2);
       //("THREAD %d \n",thread_current()->tid);
@@ -258,30 +257,29 @@ static void syscall_handler (struct intr_frame *f UNUSED)
 
       case SYS_EXEC:
       {
-        //printf("AYU \n\n");
-        printf("-------------------------------------- EXEC 1 \n");
+        ////////////printf("AYU \n\n");
+        //////printf("-------------------------------------- EXEC 1 \n");
         char* cmdline = (* ((int *) f->esp + 1));
-        printf("-------------------------------------- EXEC 2 \n");
-        //printf("BAHU AYU\n\n");
+        //////printf("-------------------------------------- EXEC 2 \n");
+        ////////////printf("BAHU AYU\n\n");
         check_adr(cmdline);
-        printf("-------------------------------------- EXEC 3 \n");
+        //////printf("-------------------------------------- EXEC 3 \n");
         cmdline = check_page((const char*)cmdline);
-        printf("-------------------------------------- EXEC 4 \n");
+        //////printf("-------------------------------------- EXEC 4 \n");
         thread_current()->isparent=1;
-        
-        printf("-------------------------------------- EXEC 5 \n");
+        //////printf("-------------------------------------- EXEC 5 \n");
         f->eax = process_execute(cmdline);
-        printf("-------------------------------------- EXEC 6 \n");
+        //////printf("-------------------------------------- EXEC 6 \n");
         break;
       }
 
       case SYS_WAIT:
       {
-        printf("-------------------------CALLED WAIT %d %d %d\n\n",thread_current()->tid),(* ((int *) f->esp + 1)),(* ((int *) f->esp + 2));
+        //////printf("-------------------------CALLED WAIT %d \n\n",thread_current()->tid);
         int *proid = (* ((int *) f->esp + 1));
-        printf("-------------------------- WAIT 2\n");
+        //////printf("-------------------------- WAIT 2\n");
         //check_adr((const void *) proid);
-        printf("--------------------------WAIT CALLED ON %d\n",proid);
+        ////////////printf("--------------------------WAIT CALLED ON %d\n",proid);
         f->eax = process_wait(proid);
         break;
       }
@@ -290,15 +288,15 @@ static void syscall_handler (struct intr_frame *f UNUSED)
       {
         char *fle = (char *) (* ((int *) f->esp + 1));
         unsigned int_size = *((int*)f->esp +2);
-        //printf("1st stage \n \n\n");
+        ////////////printf("1st stage \n \n\n");
         check_adr(fle);
-        //printf("2nd stage \n \n\n");
+        ////////////printf("2nd stage \n \n\n");
         //check_adr(int_size );
-        //printf("3rd one \n \n\n");
+        ////////////printf("3rd one \n \n\n");
         fle = check_page(fle);
-        //printf("final\n");
+        ////////////printf("final\n");
         f->eax = create(fle, int_size);
-        //printf("last\n");
+        ////////////printf("last\n");
         break;
       }
 
@@ -432,7 +430,7 @@ static void syscall_handler (struct intr_frame *f UNUSED)
 
       default:
       {
-        printf("DEAFULT REACHED\n\n");
+        //////printf("DEAFULT REACHED\n\n");
         thread_exit();
       }
     }
