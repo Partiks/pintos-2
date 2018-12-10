@@ -1,12 +1,12 @@
 Copying tests/filesys/base/lg-seq-block to scratch partition...
-qemu-system-i386 -device isa-debug-exit -hda /tmp/A4BsdfQD_q.dsk -m 4 -net none -nographic -monitor null
+qemu-system-i386 -device isa-debug-exit -hda /tmp/dQ6ubTs76R.dsk -m 4 -net none -nographic -monitor null
 PiLo hda1
 Loading..........
 Kernel command line: -q -f extract run lg-seq-block
 Pintos booting with 3,968 kB RAM...
 367 pages available in kernel pool.
 367 pages available in user pool.
-Calibrating timer...  366,592,000 loops/s.
+Calibrating timer...  552,140,800 loops/s.
 hda: 5,040 sectors (2 MB), model "QM00001", serial "QEMU HARDDISK"
 hda1: 173 sectors (86 kB), Pintos OS kernel (20)
 hda2: 4,096 sectors (2 MB), Pintos file system (21)
@@ -23,12 +23,17 @@ Executing 'lg-seq-block':
 (lg-seq-block) create "noodle"
 (lg-seq-block) open "noodle"
 (lg-seq-block) writing "noodle"
+(lg-seq-block) close "noodle"
+(lg-seq-block) open "noodle" for verification
+(lg-seq-block) verified contents of "noodle"
+(lg-seq-block) close "noodle"
+(lg-seq-block) end
+lg-seq-block: exit(0)
 Execution of 'lg-seq-block' complete.
-Timer: 95 ticks
-Thread: 0 idle ticks, 88 kernel ticks, 7 user ticks
-hda2 (filesys): 381 reads, 665 writes
+Timer: 96 ticks
+hda2 (filesys): 533 reads, 665 writes
 hda3 (scratch): 106 reads, 2 writes
-Console: 958 characters output
+Console: 1098 characters output
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off...

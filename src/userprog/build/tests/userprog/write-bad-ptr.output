@@ -1,13 +1,13 @@
 Copying tests/userprog/write-bad-ptr to scratch partition...
 Copying ../../tests/userprog/sample.txt to scratch partition...
-qemu-system-i386 -device isa-debug-exit -hda /tmp/uXAEzO3W4R.dsk -m 4 -net none -nographic -monitor null
+qemu-system-i386 -device isa-debug-exit -hda /tmp/XU2o4HDvzd.dsk -m 4 -net none -nographic -monitor null
 PiLo hda1
 Loading..........
 Kernel command line: -q -f extract run write-bad-ptr
 Pintos booting with 3,968 kB RAM...
 367 pages available in kernel pool.
 367 pages available in user pool.
-Calibrating timer...  183,296,000 loops/s.
+Calibrating timer...  533,299,200 loops/s.
 hda: 5,040 sectors (2 MB), model "QM00001", serial "QEMU HARDDISK"
 hda1: 173 sectors (86 kB), Pintos OS kernel (20)
 hda2: 4,096 sectors (2 MB), Pintos file system (21)
@@ -23,13 +23,21 @@ Erasing ustar archive...
 Executing 'write-bad-ptr':
 (write-bad-ptr) begin
 (write-bad-ptr) open "sample.txt"
-write-bad-ptr: exit(-1)
-Execution of 'write-bad-ptr' complete.
-Timer: 89 ticks
-Thread: 0 idle ticks, 88 kernel ticks, 1 user ticks
-hda2 (filesys): 92 reads, 216 writes
+Page fault at 0xffffffff: not present error reading page in kernel context.
+Interrupt 0x0e (#PF Page-Fault Exception) at eip=0xc002d8ac
+ cr2=ffffffff error=00000000
+ eax=c010620c ebx=0000007b ecx=0000007b edx=ffffffff
+ esi=ffffffff edi=c010620c esp=c010508c ebp=00000000
+ cs=0008 ds=0010 es=0010 ss=006a
+Kernel PANIC at ../../userprog/exception.c:100 in kill(): Kernel bug - unexpected interrupt in kernel
+Call stack: 0xc00287bf.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 87 ticks
+hda2 (filesys): 93 reads, 216 writes
 hda3 (scratch): 104 reads, 2 writes
-Console: 973 characters output
+Console: 1442 characters output
 Keyboard: 0 keys pressed
-Exception: 0 page faults
+Exception: 1 page faults
 Powering off...

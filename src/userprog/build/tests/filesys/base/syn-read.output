@@ -1,13 +1,13 @@
 Copying tests/filesys/base/syn-read to scratch partition...
 Copying tests/filesys/base/child-syn-read to scratch partition...
-qemu-system-i386 -device isa-debug-exit -hda /tmp/WbhpblsgqW.dsk -m 4 -net none -nographic -monitor null
+qemu-system-i386 -device isa-debug-exit -hda /tmp/Gnx2_CZBJG.dsk -m 4 -net none -nographic -monitor null
 PiLo hda1
 Loading..........
 Kernel command line: -q -f extract run syn-read
 Pintos booting with 3,968 kB RAM...
 367 pages available in kernel pool.
 367 pages available in user pool.
-Calibrating timer...  523,468,800 loops/s.
+Calibrating timer...  510,361,600 loops/s.
 hda: 5,040 sectors (2 MB), model "QM00001", serial "QEMU HARDDISK"
 hda1: 173 sectors (86 kB), Pintos OS kernel (20)
 hda2: 4,096 sectors (2 MB), Pintos file system (21)
@@ -36,15 +36,15 @@ Executing 'syn-read':
 (syn-read) exec child 8 of 10: "child-syn-read 7"
 (syn-read) exec child 9 of 10: "child-syn-read 8"
 (syn-read) exec child 10 of 10: "child-syn-read 9"
--------------------------CALLED WAIT
-
-syn-read: exit(-1)
-Execution of 'syn-read' complete.
-Timer: 104 ticks
-Thread: 0 idle ticks, 92 kernel ticks, 12 user ticks
-hda2 (filesys): 716 reads, 470 writes
+Kernel PANIC at ../../threads/synch.c:232 in lock_release(): assertion `lock_held_by_current_thread (lock)' failed.
+Call stack: 0xc00287bf 0.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 94 ticks
+hda2 (filesys): 496 reads, 470 writes
 hda3 (scratch): 227 reads, 2 writes
-Console: 1552 characters output
+Console: 1703 characters output
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off...

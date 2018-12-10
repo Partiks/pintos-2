@@ -1,11 +1,2 @@
 FAIL
-Test output failed to match any acceptable form.
-
-Acceptable output:
-  (bad-jump2) begin
-  bad-jump2: exit(-1)
-Differences in `diff -u' format:
-  (bad-jump2) begin
-- bad-jump2: exit(-1)
-
-(User fault messages are excluded for matching purposes.)
+run: TIMEOUT after 11 seconds of wall-clock time - load average: 0.37, 0.61, 0.54

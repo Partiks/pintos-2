@@ -19,6 +19,7 @@
 #include "threads/vaddr.h"
 #include "../../lib/kernel/list.h"
 #include "threads/malloc.h"
+#include "userprog/syscall.h"
 
 //partiks code start
 struct child{
@@ -42,8 +43,7 @@ static bool load (const char *cmdline, void (**eip) (void), void **esp, char *fu
    thread id, or TID_ERROR if the thread cannot be created. */
 tid_t process_execute (const char *file_name) 
 {
-  //////////////printf("----------------PROCESS_EXECUTE CALLED WITH %s\n",file_name);
-  lock_init(&file_lock);
+  ////////////////printf("("----------------PROCESS_EXECUTE CALLED WITH %s\n",file_name);
   char *fn_copy;
   tid_t tid;
   /* Make a copy of FILE_NAME.
@@ -56,20 +56,20 @@ tid_t process_execute (const char *file_name)
 
   /* Create a new thread to execute FILE_NAME. */
   struct thread *parent = thread_current();
-  //////printf("REAL PARENT %d\n",thread_current()->tid);
+  ////////printf("("REAL PARENT %d\n",thread_current()->tid);
   tid = thread_create (file_name, PRI_DEFAULT, start_process, fn_copy);
-  ////////////printf("TIDs out: %d \n",thread_current()->tid);
+  //////////////printf("("TIDs out: %d \n",thread_current()->tid);
   if (tid == TID_ERROR){
-    //////printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>WEIRD TID ERROR\n");
+    ////////printf("(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>WEIRD TID ERROR\n");
     palloc_free_page (fn_copy); 
   }
   else{
   //partiks code for wait and child tracking for parent processeshere
-    ////////////printf("---------------------- 1 TIDs out in else: %d \n",thread_current()->tid);
+    //////////////printf("("---------------------- 1 TIDs out in else: %d \n",thread_current()->tid);
     struct child *c = (struct child *) malloc(sizeof(struct child));
     c->pid = NULL;
-    //////////////printf("MALLOC SUCCESSFUL\n");
-    //////printf("----------------------  2> PARENT TID: %d ----\n\n",thread_current()->tid);
+    ////////////////printf("("MALLOC SUCCESSFUL\n");
+    ////////printf("("----------------------  2> PARENT TID: %d ----\n\n",thread_current()->tid);
     //according to what I read probably in PintOs documentation, TID is used for referencing kernel thread and pid to reference user level thread.
     c->pid = tid;
     c->alive = 1;
@@ -78,12 +78,12 @@ tid_t process_execute (const char *file_name)
     c->parent_pid = thread_current();
 
     //thread_current()->parent_pid = thread_current();
-    ////////////printf("PARENT ADDRESS %x\n",c->parent_pid);
-    ////////////printf("----------------------  3 CHILD TID TO BE PUSHED: %d \n",c->pid);
+    //////////////printf("("PARENT ADDRESS %x\n",c->parent_pid);
+    //////////////printf("("----------------------  3 CHILD TID TO BE PUSHED: %d \n",c->pid);
     list_push_back(&thread_current()->child_list, &c->elem);
-    //////printf("---------------------- 4> CHILD TID PUSHED: %d \n",c->pid);
+    ////////printf("("---------------------- 4> CHILD TID PUSHED: %d \n",c->pid);
     //pushed the child with pid onto the child list of parent
-  //////////////printf("AFTER LIST PUSH %d --------------\n\n",tid);
+  ////////////////printf("("AFTER LIST PUSH %d --------------\n\n",tid);
   //end partiks code */
   }
 
@@ -127,12 +127,16 @@ static void start_process (void *file_name_)
   }
   //partiks code end
   ////("---- Calling load with %s %s %s %d %d \n\n ",file_name, &if_.eip, &if_.esp, &if_.eip, &if_.esp);
+  lock_init(&file_lock);
+  lock_acquire(&file_lock);
   success = load (file_name, &if_.eip, &if_.esp,fn_copy_2); //passing file_name which is supposed to be just the executable name after messing with strtok_r()
-
+  lock_release (&file_lock);
   /* If load failed, quit. */
   palloc_free_page (file_name);
   if (!success){
     //("----- LOAD FAILED, IN THE END IT DOESN'T EVEN MATTER \n\n");
+    //printf("("----------------Success vaue of load funtion: %d by thread %d\n",success,thread_current()->tid);
+    //exit(-1);
     thread_exit ();
   }
 
@@ -159,45 +163,45 @@ static void start_process (void *file_name_)
    does nothing. */
 int process_wait (tid_t child_tid UNUSED) 
 {
-  //////printf("---------------------- PROCESS_WAIT CALLED ON %d by %d\n",child_tid,thread_current()->tid);
+  ////////printf("("---------------------- PROCESS_WAIT CALLED ON %d by %d\n",child_tid,thread_current()->tid);
   int i=0;
   //partiks code start
   struct child *b = (struct child *) malloc(sizeof(struct child));
   for(struct list_elem* c = list_begin(&thread_current()->child_list); c != list_end(&thread_current()->child_list); c = list_next(c))
   {
-    //printf("---------------------- PROC_WAIT %d count = %d\n",thread_current()->tid,thread_current()->child_count);
+    ////printf("("---------------------- PROC_WAIT %d count = %d\n",thread_current()->tid,thread_current()->child_count);
     b = list_entry(c,  struct child, elem);
-    //////printf("---------------------- PROC_WAIT 2\n");
+    ////////printf("("---------------------- PROC_WAIT 2\n");
     if (b->pid == child_tid)
     {
       for (i=0;i<thread_current()->child_count;i+=2) //don't wait for the child process second time for wait-twice test
       {
-        //printf("---------------------SEARCH LOOP %d waited[i] = %d child_id=%d\n",thread_current()->tid,thread_current()->wait_log[i],b->pid);
+        ////printf("("---------------------SEARCH LOOP %d waited[i] = %d child_id=%d\n",thread_current()->tid,thread_current()->wait_log[i],b->pid);
         if(thread_current()->wait_log[i] == b->pid)
         {
-          //printf("--------------------- FOUND THE SON OF A BITCH\n");
+          ////printf("("--------------------- FOUND THE SON OF A BITCH\n");
             return -1;
         }
       }
-      //////printf("---------------------- PROC_WAIT 3\n");
-      //printf("WAITED LIST ENRY: %d %d at %d\n\n",thread_current()->tid, b->pid,thread_current()->child_count);
+      ////////printf("("---------------------- PROC_WAIT 3\n");
+      ////printf("("WAITED LIST ENRY: %d %d at %d\n\n",thread_current()->tid, b->pid,thread_current()->child_count);
       thread_current()->wait_log[thread_current()->child_count]=b->pid; thread_current()->child_count++;
       
-      //////printf("---------------------- PROC_WAIT 4\n");
-      ////////////printf("\n\n----------WAIT PID MATCH FOUND %d\n\n", child_tid);
+      ////////printf("("---------------------- PROC_WAIT 4\n");
+      //////////////printf("("\n\n----------WAIT PID MATCH FOUND %d\n\n", child_tid);
       sema_down(&thread_current()->waiting_for_child);
-      //////printf("---------------------- PROC_WAIT 5\n");
+      ////////printf("("---------------------- PROC_WAIT 5\n");
       //while(b->alive == 1) //while child process is alive parent waits
       //{
         //do nothing;
-        ////////////printf("---------------------- PROC_WAIT 6 \n");
+        //////////////printf("("---------------------- PROC_WAIT 6 \n");
       //}
-      //////printf("---------------------- PROC_WAIT 7 \n");
+      ////////printf("("---------------------- PROC_WAIT 7 \n");
       thread_current()->wait_log[thread_current()->child_count++]=b->exit_status;
-      //////printf("---------------------- PROC_WAIT 8 \n");
+      ////////printf("("---------------------- PROC_WAIT 8 \n");
     }
     else{
-      //////printf("---------------------- PROC_WAIT ELSE9 \n");
+      ////////printf("("---------------------- PROC_WAIT ELSE9 \n");
       //check for already dead child processes in thread_current()->wait_log
       //int i;
       //while(i=0;i<count;i+=2){
@@ -206,15 +210,15 @@ int process_wait (tid_t child_tid UNUSED)
       //there are no child processes
     }
     //struct thread *t = list_entry(c, struct thread, list_elem);
-    //////////////printf("\n\n LIST %d \n\n",t->tid);
+    ////////////////printf("("\n\n LIST %d \n\n",t->tid);
   }
   /*int i=0;
-  //////printf("---------------------- ENTERING ENDLESS LOOP 10 \n");
+  ////////printf("("---------------------- ENTERING ENDLESS LOOP 10 \n");
   for (i=0;i<4444446;i++)
   {
     
   }
-  //////printf("----------------------- EXITING ENDLESS LOOP 11\n");
+  ////////printf("("----------------------- EXITING ENDLESS LOOP 11\n");
   //partiks code end */
   return b->exit_status;
 }
@@ -223,7 +227,7 @@ int process_wait (tid_t child_tid UNUSED)
 void
 process_exit (void)
 {
-  ////////////printf("-------PROCESS_EXIT CALLED \n\n\n");
+  //////////////printf("("-------PROCESS_EXIT CALLED \n\n\n");
   struct thread *cur = thread_current ();
   uint32_t *pd;
 
@@ -344,7 +348,7 @@ bool load (const char *file_name, void (**eip) (void), void **esp, char *full_na
   bool success = false;
   int i;
 
-  ////("\n<45>%s %s\n\n",file_name, full_name);
+  ////printf("\n<45>%s %s\n\n",file_name, full_name);
   /* Allocate and activate page directory. */
   t->pagedir = pagedir_create ();
   if (t->pagedir == NULL) 
@@ -355,7 +359,7 @@ bool load (const char *file_name, void (**eip) (void), void **esp, char *full_na
   file = filesys_open (file_name);
   if (file == NULL) 
     {
-      printf("load: %s: open failed\n", file_name);
+      //printf("("load: %s: open failed\n", file_name);
       goto done; 
     }
 
@@ -368,7 +372,7 @@ bool load (const char *file_name, void (**eip) (void), void **esp, char *full_na
       || ehdr.e_phentsize != sizeof (struct Elf32_Phdr)
       || ehdr.e_phnum > 1024) 
     {
-      printf("load: %s: error loading executable: -1\n", file_name);
+      //printf("("load: %s: error loading executable: -1\n", file_name);
       goto done; 
     }
 
@@ -434,10 +438,10 @@ bool load (const char *file_name, void (**eip) (void), void **esp, char *full_na
 
   /*Calling Set up stack. */
   if (!setup_stack (esp, full_name)){
-    ////("SETUP STACK FAILED\n\n");
+    ////printf("SETUP STACK FAILED\n\n");
     goto done;
   }
-  ////("SETUP STACK PASSED\n\n");
+  ////printf("SETUP STACK PASSED\n\n");
   /* Start address. */
   *eip = (void (*) (void)) ehdr.e_entry;
 
@@ -590,7 +594,7 @@ static bool setup_stack (void **esp, char* full_name)
   }
 
   //("INITIAL STACK AREA DUMP\n");
-  //(PHYS_BASE-128,PHYS_BASE-128, 128,true);
+  //hex_dump(PHYS_BASE-128,PHYS_BASE-128, 128,true);
 //PUSHING THE ARGUMENTS ONTO STACK --------------------
   for(i=count-1;i>-1;i--){
     *esp -=(strlen(argv[i]) + 1);
@@ -604,7 +608,7 @@ static bool setup_stack (void **esp, char* full_name)
   strlcpy(temp, argv[0],PGSIZE);
   struct thread *curr = thread_current();
   strlcpy (curr->name, temp, sizeof curr->name);
-  //////////////printf("TEMP: %s %d\n",temp,thread_current()->tid);
+  ////////////////printf("("TEMP: %s %d\n",temp,thread_current()->tid);
   //*curr->name=temp;
 
   //("STARTING WORD ALIGN FROM ESP %x\n\n",*esp);
@@ -644,9 +648,9 @@ static bool setup_stack (void **esp, char* full_name)
 
   //("AFTER STACK OPS ESP FINAL %d %x\n",*esp,*esp);
   //hex_dump(PHYS_BASE-128,PHYS_BASE-128, 128,true);
-  ////////////printf("\n*esp=%x\n\n",*esp);
+  //////////////printf("("\n*esp=%x\n\n",*esp);
   //hex_dump(*esp,PHYS_BASE-128, 128,true);
-  ////////////printf("\n*esp=%x\n\n",*esp);
+  //////////////printf("("\n*esp=%x\n\n",*esp);
   //hex_dump(PHYS_BASE-128,PHYS_BASE-128, 128,true);
 
   //("------SUCCESS OF SETUP_STACK : %d\n\n",success);

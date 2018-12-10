@@ -1,1 +1,8 @@
-PASS
+FAIL
+Kernel panic in run: PANIC at ../../userprog/exception.c:100 in kill(): Kernel bug - unexpected interrupt in kernel
+Call stack: 0xc00287bf 0xc00277e2 0x6e65706f
+Translation of call stack:
+In kernel.o:
+0xc00287bf: debug_panic (.../../lib/kernel/debug.c:38)
+0xc00277e2: strcmp (...ild/../../lib/string.c:81)
+0x6e65706f: (unknown)

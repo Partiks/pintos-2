@@ -149,8 +149,7 @@ thread_tick (void)
 void
 thread_print_stats (void) 
 {
-  printf ("Thread: %lld idle ticks, %lld kernel ticks, %lld user ticks\n",
-          idle_ticks, kernel_ticks, user_ticks);
+  //printf(" ("Thread: %lld idle ticks, %lld kernel ticks, %lld user ticks\n",          idle_ticks, kernel_ticks, user_ticks);
 }
 
 /* Creates a new kernel thread named NAME with the given initial
@@ -284,7 +283,7 @@ thread_tid (void)
 void
 thread_exit (void) 
 {
-  //printf("-------THREAD_EXIT CALLED \n\n\n");
+  ////printf("("-------THREAD_EXIT CALLED \n\n\n");
   ASSERT (!intr_context ());
 
 #ifdef USERPROG
@@ -476,6 +475,7 @@ init_thread (struct thread *t, const char *name, int priority)
   t->file_descriptor=2;
   t->child_count=0;
   t->parent_pid = running_thread();
+
   //partiks code
   
   //code end here
@@ -523,8 +523,8 @@ next_thread_to_run (void)
    the first time a thread is scheduled it is called by
    switch_entry() (see switch.S).
 
-   It's not safe to call printf() until the thread switch is
-   complete.  In practice that means that printf()s should be
+   It's not safe to call //printf("() until the thread switch is
+   complete.  In practice that means that //printf("()s should be
    added at the end of the function.
 
    After this function and its caller returns, the thread switch
@@ -564,7 +564,7 @@ thread_schedule_tail (struct thread *prev)
    running to some other state.  This function finds another
    thread to run and switches to it.
 
-   It's not safe to call printf() until thread_schedule_tail()
+   It's not safe to call //printf("() until thread_schedule_tail()
    has completed. */
 static void
 schedule (void) 

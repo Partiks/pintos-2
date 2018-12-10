@@ -1,12 +1,12 @@
 Copying tests/userprog/sc-boundary-3 to scratch partition...
-qemu-system-i386 -device isa-debug-exit -hda /tmp/OsaQafF360.dsk -m 4 -net none -nographic -monitor null
+qemu-system-i386 -device isa-debug-exit -hda /tmp/IXjy8TKwhD.dsk -m 4 -net none -nographic -monitor null
 PiLo hda1
 Loading..........
 Kernel command line: -q -f extract run sc-boundary-3
 Pintos booting with 3,968 kB RAM...
 367 pages available in kernel pool.
 367 pages available in user pool.
-Calibrating timer...  209,510,400 loops/s.
+Calibrating timer...  511,180,800 loops/s.
 hda: 5,040 sectors (2 MB), model "QM00001", serial "QEMU HARDDISK"
 hda1: 173 sectors (86 kB), Pintos OS kernel (20)
 hda2: 4,096 sectors (2 MB), Pintos file system (21)
@@ -21,21 +21,20 @@ Erasing ustar archive...
 Executing 'sc-boundary-3':
 (sc-boundary-3) begin
 Page fault at 0x804f000: not present error reading page in kernel context.
-Interrupt 0x0e (#PF Page-Fault Exception) at eip=0xc002bfb6
+Interrupt 0x0e (#PF Page-Fault Exception) at eip=0xc002c19a
  cr2=0804f000 error=00000000
  eax=0804efff ebx=0804efff ecx=000000ad edx=00000030
  esi=c010afb0 edi=00000000 esp=0804efff ebp=c010afe8
  cs=0008 ds=0010 es=0010 ss=54c0
 Kernel PANIC at ../../userprog/exception.c:100 in kill(): Kernel bug - unexpected interrupt in kernel
-Call stack: 0xc00287cf 0xc002bfb6 0x80480b1.
+Call stack: 0xc00287bf 0xc002c19a 0x80480b1.
 The `backtrace' program can make call stacks useful.
 Read "Backtraces" in the "Debugging Tools" chapter
 of the Pintos documentation for more information.
-Timer: 92 ticks
-Thread: 0 idle ticks, 87 kernel ticks, 5 user ticks
+Timer: 88 ticks
 hda2 (filesys): 62 reads, 214 writes
 hda3 (scratch): 104 reads, 2 writes
-Console: 1435 characters output
+Console: 1383 characters output
 Keyboard: 0 keys pressed
 Exception: 1 page faults
 Powering off...

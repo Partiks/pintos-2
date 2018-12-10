@@ -1,12 +1,12 @@
 Copying tests/userprog/create-bad-ptr to scratch partition...
-qemu-system-i386 -device isa-debug-exit -hda /tmp/oVduH_lxI1.dsk -m 4 -net none -nographic -monitor null
+qemu-system-i386 -device isa-debug-exit -hda /tmp/nZPVCpE9KQ.dsk -m 4 -net none -nographic -monitor null
 PiLo hda1
 Loading..........
 Kernel command line: -q -f extract run create-bad-ptr
 Pintos booting with 3,968 kB RAM...
 367 pages available in kernel pool.
 367 pages available in user pool.
-Calibrating timer...  393,216,000 loops/s.
+Calibrating timer...  537,395,200 loops/s.
 hda: 5,040 sectors (2 MB), model "QM00001", serial "QEMU HARDDISK"
 hda1: 173 sectors (86 kB), Pintos OS kernel (20)
 hda2: 4,096 sectors (2 MB), Pintos file system (21)
@@ -20,13 +20,24 @@ Putting 'create-bad-ptr' into the file system...
 Erasing ustar archive...
 Executing 'create-bad-ptr':
 (create-bad-ptr) begin
-create-bad-ptr: exit(-1)
-Execution of 'create-bad-ptr' complete.
-Timer: 113 ticks
-Thread: 0 idle ticks, 112 kernel ticks, 1 user ticks
-hda2 (filesys): 61 reads, 210 writes
+Page fault at 0xffffffff: not present error reading page in kernel context.
+Interrupt 0x0e (#PF Page-Fault Exception) at eip=0xc002d0ef
+ cr2=ffffffff error=00000000
+ eax=ffffff00 ebx=00000000 ecx=c0036f98 edx=00000007
+ esi=c010705c edi=20101234 esp=c010703c ebp=ffffffff
+ cs=0008 ds=0010 es=0010 ss=704c
+Kernel PANIC at ../../userprog/exception.c:100 in kill(): Kernel bug - unexpected interrupt in kernel
+Call stack: 0xc00287bf 0xc002d0efPage fault at 0xffffffff: not present error reading page in kernel context.
+Interrupt 0x0e (#PF Page-Fault Exception) at eip=0xc00261cb
+ cr2=ffffffff error=00000000
+ eax=0000000b ebx=ffffffff ecx=000007a1 edx=000003d4
+ esi=00000064 edi=c002f688 esp=c003113c ebp=c010ad98
+ cs=0008 ds=0010 es=0010 ss=d0ef
+Kernel PANIC recursion at ../../userprog/exception.c:100 in kill().
+Timer: 91 ticks
+hda2 (filesys): 62 reads, 213 writes
 hda3 (scratch): 102 reads, 2 writes
-Console: 902 characters output
+Console: 1594 characters output
 Keyboard: 0 keys pressed
-Exception: 0 page faults
+Exception: 2 page faults
 Powering off...

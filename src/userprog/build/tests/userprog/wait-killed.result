@@ -1,10 +1,10 @@
 FAIL
 Kernel panic in run: PANIC at ../../userprog/exception.c:100 in kill(): Kernel bug - unexpected interrupt in kernel
-Call stack: 0xc00287df 0xc002c075 0x80480aa
+Call stack: 0xc00287bf 0xc002c19a 0x80480aa
 Translation of call stack:
 In kernel.o:
-0xc00287df: debug_panic (.../../lib/kernel/debug.c:38)
-0xc002c075: syscall_handler (...../userprog/syscall.c:244)
+0xc00287bf: debug_panic (.../../lib/kernel/debug.c:38)
+0xc002c19a: syscall_handler (...../userprog/syscall.c:257)
 In tests/userprog/wait-killed:
 0x080480aa: test_main (...userprog/wait-killed.c:10)
 Translations of user virtual addresses above are based on a guess at
